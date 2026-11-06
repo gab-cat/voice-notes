@@ -6,6 +6,9 @@ import type { AppInfo, AppState, Note, NoteSummary, VoiceNotesRPC } from "../sha
 import { AGY } from "./agent";
 import * as notes from "./notes";
 import * as updates from "./updates";
+import { debug } from "./debug";
+
+debug("app starting");
 
 const DEV_SERVER_URL = "http://localhost:5173";
 const WIDTH = 380;
@@ -19,9 +22,17 @@ try {
 } catch {}
 const saveSettings = () => writeFile(SETTINGS_FILE, JSON.stringify(settings)).catch(() => {});
 
-const state: AppState = { pinned: settings.pinned, downloadsBlocked: false, signedIn: null };
+const state: AppState = {
+	pinned: settings.pinned,
+	downloadsBlocked: false,
+	downloadsWaiting: false,
+	signedIn: null,
+};
 
 let win: BrowserWindow | null = null;
+// Note to open once a freshly created window asks for it (takeFocus);
+// a push to a window that's still loading can be lost.
+let pendingFocus: string | null = null;
 
 type Push = {
 	notesChanged(l: NoteSummary[]): void;
@@ -40,7 +51,11 @@ const rpc = BrowserView.defineRPC<VoiceNotesRPC>({
 	maxRequestTime: 10 * 60_000,
 	handlers: {
 		requests: {
-			listNotes: () => notes.listNotes(),
+			listNotes: () => {
+				const list = notes.listNotes();
+				debug("rpc listNotes ->", list.length);
+				return list;
+			},
 			getNote: ({ id }) => notes.getNote(id),
 			getAudio: ({ id }) => notes.getAudio(id),
 			transcribe: ({ id }) => notes.transcribe(id),
@@ -65,6 +80,11 @@ const rpc = BrowserView.defineRPC<VoiceNotesRPC>({
 					{ mode: 0o755 },
 				);
 				Utils.openPath(script);
+			},
+			takeFocus: () => {
+				const id = pendingFocus;
+				pendingFocus = null;
+				return id;
 			},
 			getAppInfo: () => ({ ...updates.appInfo }),
 			checkForUpdate: async () => {
@@ -209,6 +229,7 @@ await updates.startUpdates((info) => {
 // ── notes ──────────────────────────────────────────────────────────────────
 
 mkdirSync(notes.SUPPORT_DIR, { recursive: true });
+debug("starting notes");
 await notes.start({
 	onListChanged: (list) => {
 		send()?.notesChanged(list);
@@ -223,14 +244,19 @@ await notes.start({
 		);
 	},
 	onNewNote: (id) => {
+		const wasOpen = win !== null;
 		openWindow();
-		// Give a freshly created window a moment to load before focusing.
-		setTimeout(() => send()?.focusNote({ id }), 600);
-		send()?.focusNote({ id });
+		if (wasOpen) send()?.focusNote({ id });
+		else pendingFocus = id; // the new window picks it up via takeFocus
 	},
 	onAuth: (signedIn) => {
 		if (state.signedIn === signedIn) return;
 		state.signedIn = signedIn;
+		pushState();
+	},
+	onDownloadsWaiting: (waiting) => {
+		if (state.downloadsWaiting === waiting) return;
+		state.downloadsWaiting = waiting;
 		pushState();
 	},
 	onDownloadsBlocked: (blocked) => {
@@ -240,5 +266,6 @@ await notes.start({
 	},
 });
 
+debug("notes started", notes.listNotes().length);
 Electrobun.events.on("reopen", () => openWindow());
 console.log("Voice Notes started");

@@ -79,11 +79,12 @@ export const onFocus = noop;
 export const onState = noop;
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-let state: AppState = { pinned: true, downloadsBlocked: false, signedIn: false };
+let state: AppState = { pinned: true, downloadsBlocked: false, downloadsWaiting: false, signedIn: false };
 
 export const listNotes = async () => notes.map(summary);
 export const getNote = async (id: string) => notes.find((n) => n.id === id) ?? null;
 export const getAudio = async () => null;
+export const takeFocus = async () => null;
 export const transcribe = async (id: string) => notes.find((n) => n.id === id) ?? null;
 export const retryAuthFailed = async () => wait(800);
 export const sendChat = async (id: string, message: string) => {

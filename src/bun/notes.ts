@@ -1,11 +1,12 @@
 // Voice note store, Downloads watcher and processing queue.
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { readFile, rename, writeFile } from "node:fs/promises";
+import { readdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Note, NoteSummary } from "../shared/types";
 import { AgentError, extractJson, runAgent } from "./agent";
+import { debug } from "./debug";
 
 export const SUPPORT_DIR = join(homedir(), "Library", "Application Support", "Voice Notes");
 const NOTES_DIR = join(SUPPORT_DIR, "notes");
@@ -22,6 +23,7 @@ type Events = {
 	onNewNote(id: string): void;
 	onAuth(signedIn: boolean): void;
 	onDownloadsBlocked(blocked: boolean): void;
+	onDownloadsWaiting(waiting: boolean): void;
 };
 let events: Events | null = null;
 
@@ -300,13 +302,23 @@ const isVoiceNote = (name: string) => name.startsWith("WhatsApp") && AUDIO_EXT.t
 
 async function scan(first: boolean) {
 	let names: string[];
+	const t = Date.now();
+	// The first read after install waits on macOS's "access Downloads?" prompt.
+	// It must be async: a sync read blocks the main thread, and with it every
+	// request from the window, until the prompt is answered.
+	const waiting = setTimeout(() => events?.onDownloadsWaiting(true), 1200);
 	try {
-		names = readdirSync(WATCH_DIR);
+		names = await readdir(WATCH_DIR);
 		events?.onDownloadsBlocked(false);
-	} catch {
+	} catch (err) {
+		debug("scan: Downloads blocked", (err as Error).message);
 		events?.onDownloadsBlocked(true);
 		return;
+	} finally {
+		clearTimeout(waiting);
+		events?.onDownloadsWaiting(false);
 	}
+	if (Date.now() - t > 500) debug(`scan: reading Downloads took ${Date.now() - t}ms`);
 	for (const name of names.filter(isVoiceNote).sort()) {
 		const id = await register(name, join(WATCH_DIR, name), first ? "new" : "queued");
 		if (id && !first) {

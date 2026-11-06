@@ -14,6 +14,7 @@ import {
 	onNotes,
 	onState,
 	setPinned,
+	takeFocus,
 } from "./rpc";
 import { IconButton } from "./ui";
 
@@ -33,7 +34,12 @@ export default function App() {
 	useSystemTheme();
 	const [notes, setNotes] = useState<NoteSummary[] | null>(null);
 	const [note, setNote] = useState<Note | null>(null);
-	const [state, setAppState] = useState<AppState>({ pinned: true, downloadsBlocked: false, signedIn: null });
+	const [state, setAppState] = useState<AppState>({
+		pinned: true,
+		downloadsBlocked: false,
+		downloadsWaiting: false,
+		signedIn: null,
+	});
 	const [appInfo, setAppInfo] = useState<AppInfo>({
 		version: "",
 		channel: "",
@@ -67,7 +73,14 @@ export default function App() {
 	}, []);
 
 	useEffect(() => {
-		listNotes().then(setNotes).catch(() => setNotes([]));
+		listNotes()
+			.then(async (list) => {
+				setNotes(list);
+				// A voice note that arrived while this window was opening.
+				const id = await takeFocus().catch(() => null);
+				if (id) go(id);
+			})
+			.catch(() => setNotes([]));
 		getState().then(setAppState).catch(() => {});
 		getAppInfo().then(setAppInfo).catch(() => {});
 		const offs = [

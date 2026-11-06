@@ -33,6 +33,7 @@ export type NoteSummary = Pick<
 export type AppState = {
 	pinned: boolean;
 	downloadsBlocked: boolean;
+	downloadsWaiting: boolean; // macOS is showing its Downloads access prompt
 	signedIn: boolean | null; // null until the first agent call
 };
 
@@ -62,6 +63,7 @@ export type VoiceNotesRPC = {
 			getState: { params: {}; response: AppState };
 			setPinned: { params: { pinned: boolean }; response: AppState };
 			openSignIn: { params: {}; response: void };
+			takeFocus: { params: {}; response: string | null };
 			getAppInfo: { params: {}; response: AppInfo };
 			checkForUpdate: { params: {}; response: AppInfo };
 			applyUpdate: { params: {}; response: void };

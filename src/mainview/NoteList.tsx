@@ -54,6 +54,12 @@ export function NoteList({
 	return (
 		<div className="scroll-soft flex h-full flex-col overflow-y-auto pb-4 pt-1 [&>*]:shrink-0">
 			<UpdateBanner info={appInfo} />
+			{state.downloadsWaiting ? (
+				<div className="panel animate-rise mx-4 mb-3 p-3.5 text-[12.5px] leading-[1.5]">
+					macOS is asking whether Voice Notes can open your Downloads folder. Click Allow so it can find
+					WhatsApp voice notes.
+				</div>
+			) : null}
 			{state.downloadsBlocked ? (
 				<div className="panel mx-4 mb-3 p-3.5 text-[12.5px] leading-[1.5]">
 					macOS is blocking access to Downloads. Allow it in System Settings, Privacy & Security, Files and
