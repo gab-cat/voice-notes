@@ -2,6 +2,8 @@
 
 A small floating macOS window that transcribes WhatsApp voice notes as soon as you download them.
 
+**Website:** [gab-cat.github.io/voice-notes](https://gab-cat.github.io/voice-notes/) · **Download:** [latest release](https://github.com/gab-cat/voice-notes/releases/latest/download/stable-macos-arm64-VoiceNotes.dmg)
+
 Download a voice note in WhatsApp. The file lands in `~/Downloads` as `WhatsApp Audio ….opus`. Voice Notes picks it up within two seconds and sends it to the Antigravity CLI (`agy`). The window then opens on that note with:
 
 - a summary, a to-do list you can tick off, and the questions the client asked
@@ -24,6 +26,10 @@ bun install
 bun run dev        # build the view and run the app with file watching
 bun run build      # release build in build/stable-macos-arm64/
 ```
+
+## Website
+
+The site lives in `site/` (plain HTML, CSS and JS, no build step) and deploys to GitHub Pages from `.github/workflows/pages.yml` on every push to `main` that touches it. Preview it with `python3 -m http.server 5175 -d site`. `scripts/build-og.sh` re-renders the social card from the live hero.
 
 ## Releases and auto-update
 

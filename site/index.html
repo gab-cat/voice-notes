@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+	<title>Voice Notes · WhatsApp voice notes, already written down</title>
+	<meta name="description" content="Voice Notes is a small floating macOS window. Download a WhatsApp voice note and it shows the transcript, a summary, your to-dos and a chat to draft the reply." />
+	<meta name="theme-color" content="#0c0c0d" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f3f3f0" media="(prefers-color-scheme: light)" />
+	<link rel="canonical" href="https://gab-cat.github.io/voice-notes/" />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Voice Notes · WhatsApp voice notes, already written down" />
+	<meta property="og:description" content="Download a voice note and a small window shows the transcript, a summary and your to-dos." />
+	<meta property="og:url" content="https://gab-cat.github.io/voice-notes/" />
+	<meta property="og:image" content="https://gab-cat.github.io/voice-notes/assets/og.jpg" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Voice Notes · WhatsApp voice notes, already written down" />
+	<meta name="twitter:description" content="Download a voice note and a small window shows the transcript, a summary and your to-dos." />
+	<meta name="twitter:image" content="https://gab-cat.github.io/voice-notes/assets/og.jpg" />
+
+	<link rel="icon" type="image/png" href="assets/favicon-64.png" />
+	<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+	<link rel="preload" href="assets/fonts/clash-display-600.woff2" as="font" type="font/woff2" crossorigin />
+	<link rel="preload" href="assets/fonts/satoshi-400.woff2" as="font" type="font/woff2" crossorigin />
+	<link rel="preload" href="assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin />
+
+	<script>
+		// Apply the saved appearance before first paint so the page never flashes.
+		try {
+			var t = localStorage.getItem("vn-theme");
+			if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+		} catch (e) {}
+	</script>
+	<link rel="stylesheet" href="styles.css" />
+	<script type="importmap">
+		{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" } }
+	</script>
+	<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" crossorigin />
+
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "SoftwareApplication",
+			"name": "Voice Notes",
+			"operatingSystem": "macOS",
+			"applicationCategory": "ProductivityApplication",
+			"description": "Transcribes WhatsApp voice notes as soon as you download them, with a summary, to-dos and a chat to draft the reply.",
+			"downloadUrl": "https://github.com/gab-cat/voice-notes/releases/latest/download/stable-macos-arm64-VoiceNotes.dmg",
+			"offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+		}
+	</script>
+</head>
+<body>
+	<header class="nav" id="nav">
+		<div class="nav-bar">
+			<a class="brand" href="#top" aria-label="Voice Notes, back to top">
+				<img src="assets/icon-256.png" width="34" height="34" alt="" />
+				<span class="brand-name">Voice Notes</span>
+			</a>
+			<nav class="nav-links" id="nav-links" aria-label="Sections">
+				<span class="nav-thumb" aria-hidden="true"></span>
+				<a href="#demo">Live demo</a>
+				<a href="#how">How it works</a>
+				<a href="#languages">Languages</a>
+				<a href="#install">Install</a>
+				<a href="#faq">FAQ</a>
+			</nav>
+			<div class="nav-end">
+				<button class="nav-status press" id="nav-status" type="button" aria-label="Play the sample voice note">
+					<span class="ns-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+					<span id="ns-text">Play a voice note</span>
+				</button>
+				<a class="icon-btn" href="https://github.com/gab-cat/voice-notes" aria-label="Voice Notes on GitHub" data-icon="github"></a>
+				<a class="btn btn-primary btn-sm press" href="https://github.com/gab-cat/voice-notes/releases/latest/download/stable-macos-arm64-VoiceNotes.dmg" data-download>
+					<span data-icon="apple" class="apple"></span>
+					<span>Download<span class="label-long"> for Mac</span></span>
+				</a>
+			</div>
+		</div>
+	</header>
+
+	<main id="top">
+		<!-- Hero: a field of waveform bars that listens when the voice note plays. -->
+		<section class="hero" id="hero">
+			<div class="hero-canvas" id="hero-canvas" aria-hidden="true"></div>
+			<div class="hero-scrim" aria-hidden="true"></div>
+			<div class="hero-fallback" aria-hidden="true"></div>
+			<div class="wrap hero-inner">
+				<div class="hero-copy">
+					<h1 class="swap">Voice notes, <span class="accent">already written down.</span></h1>
+					<p class="hero-sub swap" style="--d: 120ms">
+						Download a WhatsApp voice note and a small window opens with the transcript, a summary and your to-dos.
+					</p>
+					<div class="hero-ctas swap" style="--d: 240ms">
+						<a class="btn btn-primary press" href="https://github.com/gab-cat/voice-notes/releases/latest/download/stable-macos-arm64-VoiceNotes.dmg" data-download>
+							<span data-icon="apple" class="apple"></span>
+							Download for Mac
+							<span class="kbd" data-version>v0.1.1</span>
+						</a>
+						<a class="btn btn-ghost press" href="https://github.com/gab-cat/voice-notes">
+							<span data-icon="github"></span>
+							View on GitHub
+						</a>
+					</div>
+				</div>
+
+				<!-- A voice note you can play. The field behind it moves with it. -->
+				<div class="hero-note swap" style="--d: 420ms" id="hero-note">
+					<button class="hn-play press" id="hn-play" type="button" aria-label="Play the sample voice note">
+						<span data-icon="play" class="hn-ic-play"></span>
+						<span data-icon="pause" class="hn-ic-pause"></span>
+					</button>
+					<div class="hn-wave" id="hn-wave" aria-hidden="true"></div>
+					<span class="hn-time mono tabular" id="hn-time">0:14</span>
+				</div>
+				<p class="hero-transcript" id="hero-transcript" aria-live="polite">
+					<span class="ht-hint">Press play. It writes down what it hears.</span>
+				</p>
+			</div>
+		</section>
+
+		<!-- The real window, on a little desktop. -->
+		<section class="section demo" id="demo">
+			<div class="wrap demo-grid">
+				<div class="demo-copy">
+					<h2 class="h2 reveal">Try the window. Download a voice note.</h2>
+					<p class="lede reveal" style="--i: 1">This is Voice Notes' own interface, rebuilt for the web and sped up. Pick a sample below, then switch tabs, tick off to-dos and ask the chat for a reply.</p>
+					<div class="downloads reveal" style="--i: 2" id="downloads" aria-label="Sample voice notes"></div>
+					<p class="demo-note reveal" style="--i: 3">The samples are made up. In the app, the transcript comes from Antigravity running Gemini 3.8 Flash.</p>
+				</div>
+				<div class="desk-stage" id="desk-stage">
+					<div class="desk-fit" id="desk-fit">
+						<div class="desk" id="desk">
+							<div class="desk-menubar">
+								<span class="dm-apple" data-icon="apple"></span>
+								<span class="dm-app">Voice Notes</span>
+								<span class="dm-spacer"></span>
+								<button class="dm-tray" id="dm-tray" type="button" aria-label="Open the menu bar menu" aria-expanded="false">
+									<img src="assets/tray-icon.png" alt="" class="tray-img" />
+								</button>
+								<span class="dm-clock mono tabular" id="dm-clock">9:41</span>
+							</div>
+							<div class="tray-menu" id="tray-menu" role="menu" aria-label="Menu bar menu"></div>
+							<div class="desk-toast" id="desk-toast" role="status" aria-live="polite">
+								<img src="assets/icon-256.png" width="34" height="34" alt="" />
+								<div><b id="dt-title">Voice note transcribed</b><span id="dt-body"></span></div>
+							</div>
+							<div class="vn" id="vn" role="application" aria-label="Interactive demo of the Voice Notes window"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- The path a voice note takes. -->
+		<section class="section" id="how">
+			<div class="wrap">
+				<h2 class="h2 reveal">From Downloads to done in about thirty seconds.</h2>
+				<p class="lede reveal" style="--i: 1">Voice Notes checks your Downloads folder every two seconds. When a file named WhatsApp Audio lands there, this happens.</p>
+
+				<div class="pipe reveal" style="--i: 2" id="pipe">
+					<div class="pipe-track" aria-hidden="true"><span class="pipe-fill" id="pipe-fill"></span><span class="pipe-packet" id="pipe-packet"></span></div>
+					<ol class="pipe-steps">
+						<li class="pipe-step" data-step="0">
+							<span class="ps-num mono">1</span>
+							<h3>It lands in Downloads</h3>
+							<p><code>WhatsApp Audio 2026-11-07 at 09.41.12.opus</code></p>
+						</li>
+						<li class="pipe-step" data-step="1">
+							<span class="ps-num mono">2</span>
+							<h3>ffmpeg makes it an mp3</h3>
+							<p>Mono, 16 kHz, small enough to send quickly. The mp3 also plays in the window.</p>
+						</li>
+						<li class="pipe-step" data-step="2">
+							<span class="ps-num mono">3</span>
+							<h3>Antigravity listens</h3>
+							<p>The Antigravity CLI runs Gemini 3.8 Flash and returns the transcript, a summary, to-dos and the questions they asked.</p>
+						</li>
+						<li class="pipe-step" data-step="3">
+							<span class="ps-num mono">4</span>
+							<h3>The window opens on it</h3>
+							<p>Right on top of what you were doing, with a notification when it's done.</p>
+						</li>
+					</ol>
+				</div>
+			</div>
+		</section>
+
+		<!-- What you get, as small live tiles. -->
+		<section class="section" id="get-back">
+			<div class="wrap">
+				<h2 class="h2 reveal">Everything you'd write down yourself.</h2>
+				<p class="lede reveal" style="--i: 1">One call to the model fills all of it. You read for ten seconds instead of listening for a minute.</p>
+
+				<div class="bento">
+					<article class="tile wide reveal">
+						<div class="tile-vis">
+							<div class="mini-todo" id="mini-todo" aria-hidden="true">
+								<div class="mt-row"><span class="mt-box"></span><span>Swap the hero photo for the croissant shot</span></div>
+								<div class="mt-row"><span class="mt-box"></span><span>Move the opening hours higher</span></div>
+								<div class="mt-row"><span class="mt-box"></span><span>Send a quote for online orders by Friday</span></div>
+							</div>
+						</div>
+						<h3>To-dos you can tick off</h3>
+						<p>Short, specific actions pulled from what they said. Ticks are saved with the note.</p>
+					</article>
+
+					<article class="tile reveal" style="--i: 1">
+						<div class="tile-vis">
+							<div class="mini-asked" aria-hidden="true">
+								<span class="ma-q">“What would online orders cost?”</span>
+								<span class="ma-q">“Can you send it by Friday?”</span>
+							</div>
+						</div>
+						<h3>The questions they asked</h3>
+						<p>So nothing goes unanswered in your reply.</p>
+					</article>
+
+					<article class="tile reveal">
+						<div class="tile-vis">
+							<div class="mini-copy" id="mini-copy" aria-hidden="true">
+								<span class="mc-btn"><span data-icon="copy"></span><span class="mc-label">Copy with transcript</span></span>
+								<pre class="mc-out" id="mc-out"></pre>
+							</div>
+						</div>
+						<h3>Copy it anywhere</h3>
+						<p>Summary, to-dos and questions as plain text, with or without the transcript.</p>
+					</article>
+
+					<article class="tile wide reveal" style="--i: 1">
+						<div class="tile-vis">
+							<div class="mini-chat" id="mini-chat" aria-hidden="true">
+								<span class="mch-me">Draft a reply</span>
+								<span class="mch-reply" id="mch-reply"></span>
+							</div>
+						</div>
+						<h3>A chat that knows the note</h3>
+						<p>Draft a reply in their language, switch it to English, or ask what's most urgent. You still press send.</p>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<!-- Mixed languages. -->
+		<section class="section" id="languages">
+			<div class="wrap lang-grid">
+				<div>
+					<h2 class="h2 reveal">Mixed languages, written the way they were said.</h2>
+					<p class="lede reveal" style="--i: 1">Taglish stays Taglish. Arabic sits right to left beside the English around it. Flip to English when you need it.</p>
+				</div>
+				<div class="panel lang-card reveal" style="--i: 2" id="lang-card">
+					<div class="lang-head">
+						<div class="seg" id="lang-pick" role="radiogroup" aria-label="Sample">
+							<span class="seg-thumb" aria-hidden="true"></span>
+							<button role="radio" data-lang="tl">Tagalog and English</button>
+							<button role="radio" data-lang="ar">Arabic and English</button>
+						</div>
+						<div class="seg" id="lang-view" role="radiogroup" aria-label="Transcript language">
+							<span class="seg-thumb" aria-hidden="true"></span>
+							<button role="radio" data-view="original">Original</button>
+							<button role="radio" data-view="english">English</button>
+						</div>
+					</div>
+					<div class="lang-body" id="lang-body" aria-live="polite"></div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Safety. -->
+		<section class="section" id="safety">
+			<div class="wrap">
+				<h2 class="h2 reveal">It reads voice notes. It doesn't take orders from them.</h2>
+				<p class="lede reveal" style="--i: 1">A voice note is someone else's words. Voice Notes treats them as content to transcribe, never as instructions.</p>
+
+				<div class="cmd reveal" style="--i: 2">
+					<span class="line"><span class="p">$</span>agy -p "…" <span class="f">--model</span> gemini-3.8-flash-medium <span class="f">--sandbox</span> <span class="f">--output-format</span> json</span>
+				</div>
+
+				<div class="facts">
+					<div class="fact reveal">
+						<h3>No auto-approve</h3>
+						<p>It never passes <code>--dangerously-skip-permissions</code>. In headless runs, anything that needs approval, like running a command or editing a file, is refused.</p>
+					</div>
+					<div class="fact reveal" style="--i: 1">
+						<h3>Sandboxed</h3>
+						<p>Each run gets <code>--sandbox</code> on top, and only sees the folder for that one note.</p>
+					</div>
+					<div class="fact reveal" style="--i: 2">
+						<h3>Your notes stay on your Mac</h3>
+						<p>Transcripts, ticks and chats live in Application Support. The audio goes to Google through Antigravity to be transcribed, and nowhere else.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Install. -->
+		<section class="section" id="install">
+			<div class="wrap">
+				<h2 class="h2 reveal">Set up in five minutes.</h2>
+				<p class="lede reveal" style="--i: 1">One download, two command-line tools and a Google sign-in. Updates arrive on their own after that.</p>
+
+				<ol class="steps">
+					<li class="step reveal">
+						<span class="step-num mono">1</span>
+						<h3>Download</h3>
+						<p>Get the <a class="inline" href="https://github.com/gab-cat/voice-notes/releases/latest/download/stable-macos-arm64-VoiceNotes.dmg" data-download>disk image</a> for Apple Silicon Macs<span data-size></span> and drag Voice Notes into Applications.</p>
+					</li>
+					<li class="step reveal" style="--i: 1">
+						<span class="step-num mono">2</span>
+						<h3>Open it once</h3>
+						<p>It isn't notarized, so right-click it and choose Open. When macOS asks about Downloads, click Allow.</p>
+					</li>
+					<li class="step reveal" style="--i: 2">
+						<span class="step-num mono">3</span>
+						<h3>Install the Antigravity CLI</h3>
+						<div class="snippet"><code>curl -fsSL https://antigravity.google/cli/install.sh | bash</code><button class="snip-copy press" type="button" data-copy="curl -fsSL https://antigravity.google/cli/install.sh | bash" aria-label="Copy the install command"><span data-icon="copy"></span></button></div>
+						<p>Then run <code>agy</code> once and sign in with Google.</p>
+					</li>
+					<li class="step reveal" style="--i: 3">
+						<span class="step-num mono">4</span>
+						<h3>Install ffmpeg</h3>
+						<div class="snippet"><code>brew install ffmpeg</code><button class="snip-copy press" type="button" data-copy="brew install ffmpeg" aria-label="Copy the ffmpeg command"><span data-icon="copy"></span></button></div>
+						<p>Voice Notes uses it to read WhatsApp's audio files.</p>
+					</li>
+				</ol>
+			</div>
+		</section>
+
+		<!-- FAQ. -->
+		<section class="section" id="faq">
+			<div class="wrap faq-grid">
+				<div class="faq-head">
+					<h2 class="h2 reveal">Questions, answered.</h2>
+					<p class="lede reveal" style="--i: 1">Something else? <a class="inline accent-link" href="https://github.com/gab-cat/voice-notes/issues">Open an issue on GitHub.</a></p>
+				</div>
+				<div class="faq-list">
+					<details class="qa reveal">
+						<summary>Does my audio leave my Mac?<span class="plus"></span></summary>
+						<div class="ans">Yes, once: it goes to Google through the Antigravity CLI so Gemini can transcribe it. The transcript, summary, ticks and chats are stored on your Mac, in Application Support.</div>
+					</details>
+					<details class="qa reveal" style="--i: 1">
+						<summary>Does it work with the WhatsApp app, or only WhatsApp Web?<span class="plus"></span></summary>
+						<div class="ans">Either. It watches your Downloads folder for files named WhatsApp Audio, so any way of saving the voice note there works.</div>
+					</details>
+					<details class="qa reveal" style="--i: 2">
+						<summary>Which languages does it understand?<span class="plus"></span></summary>
+						<div class="ans">Whatever Gemini understands, including notes that switch between languages mid-sentence. When a note isn't in English you also get an English translation.</div>
+					</details>
+					<details class="qa reveal" style="--i: 3">
+						<summary>Will it reply for me?<span class="plus"></span></summary>
+						<div class="ans">No. The chat drafts replies ready to paste into WhatsApp. Sending is always up to you.</div>
+					</details>
+					<details class="qa reveal" style="--i: 4">
+						<summary>What about voice notes I already have?<span class="plus"></span></summary>
+						<div class="ans">The first time it runs, it lists what's already in Downloads without sending anything. Each one has a Transcribe button for when you want it.</div>
+					</details>
+					<details class="qa reveal" style="--i: 5">
+						<summary>Why does macOS warn me when I open it?<span class="plus"></span></summary>
+						<div class="ans">The app is signed ad hoc rather than notarized by Apple, which is common for small open-source tools. You allow it once. After an update, macOS may ask about Downloads again.</div>
+					</details>
+					<details class="qa reveal" style="--i: 6">
+						<summary>Does it cost anything?<span class="plus"></span></summary>
+						<div class="ans">The app is free and open source. Transcription runs on your own Antigravity account, under whatever limits Google sets for it.</div>
+					</details>
+				</div>
+			</div>
+		</section>
+
+		<!-- Final call. -->
+		<section class="section final" id="get">
+			<div class="wrap">
+				<div class="final-wave" id="final-wave" aria-hidden="true"></div>
+				<img class="final-icon reveal" src="assets/icon-256.png" width="96" height="96" alt="Voice Notes app icon" />
+				<h2 class="h2 reveal" style="--i: 1">Stop replaying voice notes.</h2>
+				<p class="lede reveal" style="--i: 1">Free for Apple Silicon Macs. It updates itself.</p>
+				<div class="hero-ctas reveal" style="--i: 2">
+					<a class="btn btn-primary press" href="https://github.com/gab-cat/voice-notes/releases/latest/download/stable-macos-arm64-VoiceNotes.dmg" data-download>
+						<span data-icon="apple" class="apple"></span>
+						Download for Mac
+						<span class="kbd" data-version>v0.1.1</span>
+					</a>
+					<a class="btn btn-ghost press" href="https://github.com/gab-cat/voice-notes">
+						<span data-icon="github"></span>
+						View on GitHub
+					</a>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer class="foot" id="foot">
+		<div class="wrap">
+			<div class="foot-top">
+				<div class="foot-sign">
+					<a class="brand" href="#top"><img src="assets/icon-256.png" width="34" height="34" alt="" />Voice Notes</a>
+					<p class="foot-line">Read the voice note. Reply when you're ready.</p>
+				</div>
+				<div class="foot-cols">
+					<div>
+						<h4>Get it</h4>
+						<a href="https://github.com/gab-cat/voice-notes/releases/latest/download/stable-macos-arm64-VoiceNotes.dmg" data-download>Download for Mac</a>
+						<a href="https://github.com/gab-cat/voice-notes/releases">All releases</a>
+					</div>
+					<div>
+						<h4>Project</h4>
+						<a href="https://github.com/gab-cat/voice-notes">Source on GitHub</a>
+						<a href="https://github.com/gab-cat/voice-notes/issues">Report an issue</a>
+					</div>
+					<div>
+						<h4>Also by gab-cat</h4>
+						<a href="https://gab-cat.github.io/focus-timer/">Focus Timer</a>
+					</div>
+				</div>
+			</div>
+			<div class="bar-word" id="bar-word" role="img" aria-label="Voice Notes"><canvas></canvas></div>
+			<div class="foot-bottom">
+				<span>Made by <a href="https://github.com/gab-cat">gab-cat</a> with Electrobun, Bun and React.</span>
+				<div class="foot-right">
+					<span>Appearance</span>
+					<div class="seg" id="theme-seg" role="radiogroup" aria-label="Appearance">
+						<span class="seg-thumb" aria-hidden="true"></span>
+						<button role="radio" data-theme-opt="auto">Auto</button>
+						<button role="radio" data-theme-opt="light">Light</button>
+						<button role="radio" data-theme-opt="dark">Dark</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script src="app.js" defer></script>
+	<script type="module" src="hero.js"></script>
+</body>
+</html>
