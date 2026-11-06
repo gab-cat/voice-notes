@@ -1001,7 +1001,7 @@
 
 	function cssColor(name) {
 		const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim().split(/\s+/).map(Number);
-		return v.length >= 3 ? v : [112, 230, 170];
+		return v.length >= 3 ? v : [172, 150, 255];
 	}
 
 	function buildFinalWave() {

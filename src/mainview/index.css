@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Tokens (shared with Focus Timer) ───────────────────────────────────── */
+/* ── Tokens (Focus Timer's neutrals, violet accent) ────────────────────────────────── */
 
 :root {
 	--bg: 243 243 240;
@@ -13,8 +13,8 @@
 	--ink: 22 22 24;
 	--ink-2: 88 88 94;
 	--ink-3: 138 138 144;
-	--accent: 20 158 101;
-	--accent-ink: 250 255 252;
+	--accent: 104 76 230;
+	--accent-ink: 250 249 255;
 	--warn: 190 124 18;
 	--danger: 204 66 56;
 	color-scheme: light;
@@ -29,8 +29,8 @@
 	--ink: 236 236 238;
 	--ink-2: 160 160 168;
 	--ink-3: 104 104 112;
-	--accent: 112 230 170;
-	--accent-ink: 5 28 17;
+	--accent: 172 150 255;
+	--accent-ink: 20 12 48;
 	--warn: 242 188 92;
 	--danger: 238 112 100;
 	color-scheme: dark;

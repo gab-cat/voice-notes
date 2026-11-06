@@ -1,6 +1,6 @@
 {
   "name": "voice-notes",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Floating window that transcribes WhatsApp voice notes with the Antigravity CLI",
   "private": true,
   "scripts": {

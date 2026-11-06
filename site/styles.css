@@ -1,6 +1,6 @@
 /* Voice Notes site. Tokens come straight from the app (src/mainview/index.css),
-   which shares them with Focus Timer, so the page and the window it shows read
-   as one object: one neutral family, one mint accent. */
+   whose neutrals come from Focus Timer, so the page and the window it shows read
+   as one object: one neutral family, one violet accent. */
 
 @font-face {
 	font-family: "Geist";
@@ -56,8 +56,8 @@
 	--ink: 22 22 24;
 	--ink-2: 88 88 94;
 	--ink-3: 124 124 130;
-	--accent: 20 158 101;
-	--accent-ink: 250 255 252;
+	--accent: 104 76 230;
+	--accent-ink: 250 249 255;
 	--danger: 204 66 56;
 	--shadow: 40 40 30;
 	--grain: 0.045;
@@ -88,8 +88,8 @@
 		--ink: 236 236 238;
 		--ink-2: 160 160 168;
 		--ink-3: 112 112 120;
-		--accent: 112 230 170;
-		--accent-ink: 5 28 17;
+		--accent: 172 150 255;
+		--accent-ink: 20 12 48;
 		--danger: 238 112 100;
 		--shadow: 0 0 0;
 		--grain: 0.07;
@@ -107,8 +107,8 @@
 	--ink: 236 236 238;
 	--ink-2: 160 160 168;
 	--ink-3: 112 112 120;
-	--accent: 112 230 170;
-	--accent-ink: 5 28 17;
+	--accent: 172 150 255;
+	--accent-ink: 20 12 48;
 	--danger: 238 112 100;
 	--shadow: 0 0 0;
 	--grain: 0.07;
@@ -988,7 +988,7 @@ code {
 	overflow: hidden;
 	background:
 		radial-gradient(ellipse 70% 60% at 20% 90%, rgb(var(--accent) / 0.22), transparent 70%),
-		radial-gradient(ellipse 60% 50% at 90% 10%, rgb(120 140 255 / 0.18), transparent 70%),
+		radial-gradient(ellipse 60% 50% at 90% 10%, rgb(255 150 120 / 0.14), transparent 70%),
 		linear-gradient(160deg, rgb(var(--bg-2)), rgb(var(--bg)));
 	box-shadow: 0 0 0 1px rgb(var(--line));
 }
