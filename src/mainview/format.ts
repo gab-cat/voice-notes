@@ -16,6 +16,35 @@ export const timeLabel = (iso: string) =>
 
 export const whenLabel = (iso: string) => `${dayLabel(iso)}, ${timeLabel(iso)}`;
 
+/** Plain-text version of a note for pasting elsewhere. */
+export function noteAsText(
+	note: {
+		received: string;
+		duration: number | null;
+		summary: string;
+		actionItems: { text: string; done: boolean }[];
+		questions: string[];
+		transcript: string;
+		english: string;
+	},
+	withTranscript: boolean,
+) {
+	// Absolute date: "Today" goes stale once pasted somewhere.
+	const date = new Date(note.received).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+	const parts = [
+		`Voice note, ${date}, ${timeLabel(note.received)} (${clock(note.duration)})`,
+		`Summary\n${note.summary}`,
+	];
+	if (note.actionItems.length)
+		parts.push(`To do\n${note.actionItems.map((i) => `- [${i.done ? "x" : " "}] ${i.text}`).join("\n")}`);
+	if (note.questions.length) parts.push(`They asked\n${note.questions.map((q) => `- ${q}`).join("\n")}`);
+	if (withTranscript) {
+		parts.push(`Transcript\n${note.transcript}`);
+		if (note.english) parts.push(`English translation\n${note.english}`);
+	}
+	return parts.join("\n\n");
+}
+
 export function clock(s: number | null | undefined) {
 	if (s == null || !Number.isFinite(s)) return "0:00";
 	const t = Math.max(0, Math.round(s));

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Note } from "../shared/types";
 import { Chat } from "./Chat";
-import { dirOf, paragraphs } from "./format";
+import { dirOf, noteAsText, paragraphs } from "./format";
 import { SignInCard } from "./NoteList";
 import { Player } from "./Player";
 import { setItem, transcribe } from "./rpc";
@@ -53,14 +53,17 @@ export function NoteView({ note }: { note: Note }) {
 function Summary({ note }: { note: Note }) {
 	return (
 		<div className="space-y-5">
-			<p className="selectable text-[14px] leading-[1.55]">{note.summary}</p>
+			<div>
+				<div className="-mt-1 mb-2 flex justify-end gap-1">
+					<CopyButton text={noteAsText(note, false)} label="Copy summary" />
+					<CopyButton text={noteAsText(note, true)} label="Copy with transcript" />
+				</div>
+				<p className="selectable text-[14px] leading-[1.55]">{note.summary}</p>
+			</div>
 
 			{note.actionItems.length ? (
 				<section className="animate-rise" style={{ ["--i" as string]: 1 }}>
-					<div className="mb-1.5 flex items-center justify-between">
-						<h2 className="text-[13px] font-semibold">To do</h2>
-						<CopyButton text={note.actionItems.map((i) => `- ${i.text}`).join("\n")} />
-					</div>
+					<h2 className="mb-1.5 text-[13px] font-semibold">To do</h2>
 					<ul className="panel divide-y divide-line/70 overflow-hidden">
 						{note.actionItems.map((item, i) => (
 							<li key={i}>

@@ -25,6 +25,9 @@ export class AgentError extends Error {
 	}
 }
 
+// Pinned so results don't shift when agy's default model changes.
+export const MODEL = "gemini-3.8-flash-medium";
+
 export const SIGN_IN_MESSAGE = "Sign in to Antigravity to transcribe voice notes.";
 
 type Envelope = {
@@ -45,6 +48,8 @@ export async function runAgent(
 		AGY,
 		"-p",
 		prompt,
+		"--model",
+		MODEL,
 		"--output-format",
 		"json",
 		"--disable-slash-commands",
