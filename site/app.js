@@ -372,11 +372,13 @@
 		hero.bars.forEach((b, i) => b.classList.toggle("on", i < lit));
 		$("#hn-time").textContent = clock(HERO_SECONDS - hero.t);
 
-		// A speech-like envelope: syllables inside phrases, with short pauses.
+		// A speech-like envelope: phrases, words and a lilt, all smooth swells
+		// rather than the sharp syllable-by-syllable spikes.
 		const t = hero.t;
 		const phrase = 0.5 + 0.5 * Math.sin(t * 1.7 + 0.6);
-		const syll = Math.abs(Math.sin(t * 9.1) * Math.sin(t * 3.3 + 1.2));
-		window.vnLevel = Math.min(1, 0.25 + phrase * 0.35 + syll * 0.55);
+		const word = 0.5 + 0.5 * Math.sin(t * 3.6 + 1.9);
+		const lilt = 0.5 + 0.5 * Math.sin(t * 6.2 + 0.4);
+		window.vnLevel = Math.min(1, 0.3 + phrase * 0.35 + word * 0.25 + lilt * 0.12);
 
 		// Words land a beat behind the audio, like a live transcript.
 		const target = Math.floor(Math.max(0, (hero.t - 0.6) / (HERO_SECONDS - 1)) * hero.words.length);

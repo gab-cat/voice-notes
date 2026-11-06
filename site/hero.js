@@ -101,13 +101,22 @@ function start() {
 
 	const m = new THREE.Matrix4();
 	const col = new THREE.Color();
+	// Each bar eases toward its height for a few frames instead of jumping
+	// to it, so the field moves like one surface.
+	const heights = new Float32Array(count);
 	let level = 0;
 	let raf = 0;
 	let first = true;
+	let last = 0;
 
 	const frame = (ms) => {
 		const t = ms / 1000;
-		level += ((window.vnLevel || 0) - level) * 0.12;
+		const dt = last ? Math.min(0.1, t - last) : 1 / 60;
+		last = t;
+		// Loudness eased by time, not by frame: quick to rise, a little slower to settle.
+		const target = window.vnLevel || 0;
+		level += (target - level) * (1 - Math.exp(-dt / (target > level ? 0.1 : 0.28)));
+		const ease = 1 - Math.exp(-dt / 0.05);
 
 		for (let i = 0; i < count; i++) {
 			const x = xs[i];
@@ -122,10 +131,10 @@ function start() {
 			if (level > 0.01) {
 				const dz = z + 6;
 				const d = Math.sqrt(x * x + dz * dz);
-				const ring = 0.5 + 0.5 * Math.sin(d * 1.6 - t * 7.5);
+				const ring = 0.5 + 0.5 * Math.sin(d * 1.35 - t * 5.6);
 				const fall = Math.exp(-d * 0.09);
 				const spine = Math.exp(-(x * x) / 18);
-				h += level * (1.7 * ring * fall + 0.7 * spine * (0.5 + 0.5 * Math.sin(z * 1.1 + t * 11)));
+				h += level * (1.8 * ring * fall + 0.7 * spine * (0.5 + 0.5 * Math.sin(z * 0.95 + t * 5.5)));
 			}
 
 			// Cursor ripples, fading over 2.4s.
@@ -137,6 +146,8 @@ function start() {
 				h += front * 0.9 * (1 - age / 2.4);
 			}
 
+			h = heights[i] ? heights[i] + (h - heights[i]) * ease : h;
+			heights[i] = h;
 			m.makeScale(1, Math.max(0.04, h), 1);
 			m.setPosition(x, 0, z);
 			mesh.setMatrixAt(i, m);
