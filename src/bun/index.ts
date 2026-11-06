@@ -2,9 +2,10 @@ import Electrobun, { BrowserView, BrowserWindow, Screen, Tray, Updater, Utils } 
 import { mkdirSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { AppState, Note, NoteSummary, VoiceNotesRPC } from "../shared/types";
+import type { AppInfo, AppState, Note, NoteSummary, VoiceNotesRPC } from "../shared/types";
 import { AGY } from "./agent";
 import * as notes from "./notes";
+import * as updates from "./updates";
 
 const DEV_SERVER_URL = "http://localhost:5173";
 const WIDTH = 380;
@@ -27,6 +28,7 @@ type Push = {
 	noteChanged(n: Note): void;
 	focusNote(p: { id: string }): void;
 	stateChanged(s: AppState): void;
+	appInfoChanged(i: AppInfo): void;
 };
 const send = () => (win?.webview.rpc as unknown as { send: Push } | undefined)?.send;
 
@@ -64,6 +66,12 @@ const rpc = BrowserView.defineRPC<VoiceNotesRPC>({
 				);
 				Utils.openPath(script);
 			},
+			getAppInfo: () => ({ ...updates.appInfo }),
+			checkForUpdate: async () => {
+				await updates.checkForUpdate();
+				return { ...updates.appInfo };
+			},
+			applyUpdate: () => updates.applyUpdate(),
 		},
 		messages: {},
 	},
@@ -157,6 +165,24 @@ function updateTray() {
 		{ type: "normal" as const, label: "Show Voice Notes", action: "show" },
 		{ type: "normal" as const, label: "Keep on top", action: "pin", checked: settings.pinned },
 		{ type: "divider" as const },
+		updates.appInfo.updateReady
+			? {
+					type: "normal" as const,
+					label: `Restart to update${updates.appInfo.availableVersion ? ` to ${updates.appInfo.availableVersion}` : ""}`,
+					action: "apply-update",
+				}
+			: {
+					type: "normal" as const,
+					label:
+						updates.appInfo.updatePhase === "checking"
+							? "Checking for updates…"
+							: updates.appInfo.updatePhase === "downloading"
+								? "Downloading update…"
+								: "Check for updates",
+					action: "check-update",
+					enabled: updates.appInfo.channel !== "dev" && updates.appInfo.updatePhase !== "checking" && updates.appInfo.updatePhase !== "downloading",
+				},
+		{ type: "divider" as const },
 		{ type: "normal" as const, label: "Quit", action: "quit" },
 	]);
 }
@@ -169,9 +195,16 @@ tray.on("tray-clicked", (event) => {
 		void saveSettings();
 		pushState();
 		updateTray();
-	} else if (action === "quit") Utils.quit();
+	} else if (action === "check-update") void updates.checkForUpdate();
+	else if (action === "apply-update") void updates.applyUpdate();
+	else if (action === "quit") Utils.quit();
 });
 updateTray();
+
+await updates.startUpdates((info) => {
+	send()?.appInfoChanged(info);
+	updateTray();
+});
 
 // ── notes ──────────────────────────────────────────────────────────────────
 

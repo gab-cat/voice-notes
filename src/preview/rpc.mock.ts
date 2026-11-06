@@ -1,5 +1,5 @@
 // Mock of ../mainview/rpc.ts for the browser design preview.
-import type { AppState, Note, NoteSummary } from "../shared/types";
+import type { AppInfo, AppState, Note, NoteSummary } from "../shared/types";
 
 const now = new Date();
 const iso = (minsAgo: number) => {
@@ -103,3 +103,20 @@ export const copyText = async (text: string) => navigator.clipboard?.writeText(t
 export const getState = async () => state;
 export const setPinned = async (pinned: boolean) => (state = { ...state, pinned });
 export const openSignIn = async () => {};
+
+const info: AppInfo = {
+	version: "0.1.0",
+	channel: "stable",
+	updatePhase: "ready",
+	updateProgress: 100,
+	availableVersion: "0.1.1",
+	updateReady: true,
+	error: null,
+};
+export const onAppInfo = noop;
+export const getAppInfo = async () => info;
+export const checkForUpdate = async () => {
+	await wait(900);
+	return info;
+};
+export const applyUpdate = async () => wait(1500);

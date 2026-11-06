@@ -36,6 +36,18 @@ export type AppState = {
 	signedIn: boolean | null; // null until the first agent call
 };
 
+export type UpdatePhase = "idle" | "checking" | "downloading" | "ready" | "error";
+
+export type AppInfo = {
+	version: string;
+	channel: string;
+	updatePhase: UpdatePhase;
+	updateProgress: number | null;
+	availableVersion: string | null;
+	updateReady: boolean;
+	error: string | null;
+};
+
 export type VoiceNotesRPC = {
 	bun: RPCSchema<{
 		requests: {
@@ -50,6 +62,9 @@ export type VoiceNotesRPC = {
 			getState: { params: {}; response: AppState };
 			setPinned: { params: { pinned: boolean }; response: AppState };
 			openSignIn: { params: {}; response: void };
+			getAppInfo: { params: {}; response: AppInfo };
+			checkForUpdate: { params: {}; response: AppInfo };
+			applyUpdate: { params: {}; response: void };
 		};
 		messages: {};
 	}>;
@@ -60,6 +75,7 @@ export type VoiceNotesRPC = {
 			noteChanged: Note;
 			focusNote: { id: string };
 			stateChanged: AppState;
+			appInfoChanged: AppInfo;
 		};
 	}>;
 };

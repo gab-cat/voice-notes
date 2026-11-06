@@ -7,6 +7,7 @@
     "postinstall": "bun run scripts/ensure-electrobun-cli.ts",
     "ensure-cli": "bun run scripts/ensure-electrobun-cli.ts",
     "tray-icon": "bun run scripts/build-tray-icon.ts",
+    "icons": "bun run scripts/build-icons.ts",
     "start": "bun run ensure-cli && vite build && electrobun dev",
     "dev": "bun run ensure-cli && vite build && electrobun dev --watch",
     "build": "bun run ensure-cli && vite build && electrobun build --env=stable",

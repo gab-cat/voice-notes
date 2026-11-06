@@ -25,6 +25,18 @@ bun run dev        # build the view and run the app with file watching
 bun run build      # release build in build/stable-macos-arm64/
 ```
 
+## Releases and auto-update
+
+Same setup as Focus Timer. Pushing a `vX.Y.Z` tag runs `.github/workflows/release.yml`, which builds on macOS and attaches the DMG, the update tarball and `update.json` to a GitHub Release. Installed copies check `releases/latest` 5 seconds after launch and then hourly, download in the background, and show "Restart to update" in the window and the menu bar.
+
+```bash
+# 1. bump "version" in package.json, commit
+# 2. tag and push; the tag must match package.json
+git tag v0.1.1 && git push origin main v0.1.1
+```
+
+Install from the DMG on the Releases page. The app is ad-hoc signed, not notarized, so the first launch needs right-click › Open.
+
 UI-only preview in a browser with sample notes (no Electrobun, no agent):
 
 ```bash

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { AppState, NoteSummary } from "../shared/types";
+import type { AppInfo, AppState, NoteSummary } from "../shared/types";
+import { UpdateBanner, VersionFooter } from "./Updates";
 import { clock, dayLabel, timeLabel } from "./format";
 import { openSignIn, retryAuthFailed } from "./rpc";
 import { Bars, Button } from "./ui";
@@ -42,14 +43,17 @@ export function SignInCard() {
 export function NoteList({
 	notes,
 	state,
+	appInfo,
 	onOpen,
 }: {
 	notes: NoteSummary[] | null;
 	state: AppState;
+	appInfo: AppInfo;
 	onOpen: (id: string) => void;
 }) {
 	return (
-		<div className="scroll-soft h-full overflow-y-auto pb-4 pt-1">
+		<div className="scroll-soft flex h-full flex-col overflow-y-auto pb-4 pt-1 [&>*]:shrink-0">
+			<UpdateBanner info={appInfo} />
 			{state.downloadsBlocked ? (
 				<div className="panel mx-4 mb-3 p-3.5 text-[12.5px] leading-[1.5]">
 					macOS is blocking access to Downloads. Allow it in System Settings, Privacy & Security, Files and
@@ -107,13 +111,16 @@ export function NoteList({
 					))}
 				</ul>
 			)}
+			<div className="mt-auto">
+				<VersionFooter info={appInfo} />
+			</div>
 		</div>
 	);
 }
 
 function Empty() {
 	return (
-		<div className="flex h-full flex-col items-center justify-center px-10 pb-16 text-center">
+		<div className="flex flex-1 flex-col items-center justify-center px-10 pb-12 text-center" style={{ flexShrink: 1 }}>
 			<Bars heights={[10, 18, 28, 16, 24, 34, 20, 12, 22, 14]} className="animate-rise text-ink/20" />
 			<h2 className="animate-rise mt-5 text-[15px] font-semibold" style={{ ["--i" as string]: 1 }}>
 				No voice notes yet

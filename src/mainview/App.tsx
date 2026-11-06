@@ -1,9 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AppState, Note, NoteSummary } from "../shared/types";
+import type { AppInfo, AppState, Note, NoteSummary } from "../shared/types";
 import { whenLabel } from "./format";
 import { NoteList } from "./NoteList";
 import { NoteView } from "./NoteView";
-import { getNote, getState, listNotes, onFocus, onNote, onNotes, onState, setPinned } from "./rpc";
+import {
+	getAppInfo,
+	getNote,
+	getState,
+	listNotes,
+	onAppInfo,
+	onFocus,
+	onNote,
+	onNotes,
+	onState,
+	setPinned,
+} from "./rpc";
 import { IconButton } from "./ui";
 
 function useSystemTheme() {
@@ -23,6 +34,15 @@ export default function App() {
 	const [notes, setNotes] = useState<NoteSummary[] | null>(null);
 	const [note, setNote] = useState<Note | null>(null);
 	const [state, setAppState] = useState<AppState>({ pinned: true, downloadsBlocked: false, signedIn: null });
+	const [appInfo, setAppInfo] = useState<AppInfo>({
+		version: "",
+		channel: "",
+		updatePhase: "idle",
+		updateProgress: null,
+		availableVersion: null,
+		updateReady: false,
+		error: null,
+	});
 	const [view, setView] = useState<View>({ id: null, dir: 1, n: 0 });
 	const [leaving, setLeaving] = useState<View | null>(null);
 	const leaveTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -49,9 +69,11 @@ export default function App() {
 	useEffect(() => {
 		listNotes().then(setNotes).catch(() => setNotes([]));
 		getState().then(setAppState).catch(() => {});
+		getAppInfo().then(setAppInfo).catch(() => {});
 		const offs = [
 			onNotes(setNotes),
 			onState(setAppState),
+			onAppInfo(setAppInfo),
 			onNote((n) => {
 				if (n.id === viewRef.current.id) setNote(n);
 			}),
@@ -79,7 +101,7 @@ export default function App() {
 				<div />
 			)
 		) : (
-			<NoteList notes={notes} state={state} onOpen={go} />
+			<NoteList notes={notes} state={state} appInfo={appInfo} onOpen={go} />
 		);
 
 	return (

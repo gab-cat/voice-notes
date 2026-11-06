@@ -7,6 +7,17 @@ export default {
 		identifier: "com.gab.voicenotes",
 		version: pkg.version,
 	},
+	release: {
+		// Each GitHub Release must include stable-macos-arm64-update.json and
+		// stable-macos-arm64-VoiceNotes.app.tar.zst (plus .patch files when present).
+		// `/latest/download/<asset>` redirects to the newest release's asset.
+		baseUrl: "https://github.com/gab-cat/voice-notes/releases/latest/download",
+	},
+	scripts: {
+		// Ad-hoc signs the DMG's app so Gatekeeper says "unidentified developer"
+		// instead of "damaged".
+		postWrap: "scripts/post-wrap-sign.ts",
+	},
 	runtime: {
 		// Closing the window keeps the app running in the menu bar, so it can
 		// still pick up new voice notes.
