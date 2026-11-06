@@ -1,9 +1,9 @@
 // Voice note store, Downloads watcher and processing queue.
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { readdir, readFile, rename, writeFile } from "node:fs/promises";
+import { copyFile, readdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { basename, extname, join } from "node:path";
 import type { Note, NoteSummary } from "../shared/types";
 import { AgentError, extractJson, runAgent } from "./agent";
 import { debug } from "./debug";
@@ -12,7 +12,6 @@ export const SUPPORT_DIR = join(homedir(), "Library", "Application Support", "Vo
 const NOTES_DIR = join(SUPPORT_DIR, "notes");
 const WATCH_DIR = join(homedir(), "Downloads");
 const AUDIO_EXT = /\.(opus|ogg|m4a|mp3|aac)$/i;
-const BIN_PATH = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin";
 
 mkdirSync(NOTES_DIR, { recursive: true });
 
@@ -86,14 +85,40 @@ export const getNote = (id: string) => cache.get(id) ?? null;
 export async function getAudio(id: string): Promise<string | null> {
 	const note = cache.get(id);
 	if (!note) return null;
-	const mp3 = join(NOTES_DIR, id, "audio.mp3");
-	if (!existsSync(mp3) && existsSync(note.source)) await convert(note.source, mp3).catch(() => {});
-	if (!existsSync(mp3)) return null;
-	const data = await readFile(mp3);
-	return `data:audio/mpeg;base64,${data.toString("base64")}`;
+	const file = await storedAudio(note).catch(() => null);
+	if (!file) return null;
+	const data = await readFile(file);
+	return `data:${MIME[extname(file).toLowerCase()] ?? "audio/ogg"};base64,${data.toString("base64")}`;
 }
 
 // ── audio helpers ──────────────────────────────────────────────────────────
+
+// The original file is kept as is. WebKit plays these formats and the model
+// hears them directly, so there is no conversion step.
+const MIME: Record<string, string> = {
+	".opus": "audio/ogg",
+	".ogg": "audio/ogg",
+	".m4a": "audio/mp4",
+	".mp3": "audio/mpeg",
+	".aac": "audio/aac",
+};
+
+// Copies the voice note into its folder on first use, so it still plays and
+// can be transcribed again after it leaves Downloads. Notes from before this
+// kept an audio.mp3 instead, which is used when the original is gone.
+async function storedAudio(note: Note): Promise<string | null> {
+	const dir = join(NOTES_DIR, note.id);
+	const own = join(dir, `audio${extname(note.fileName).toLowerCase()}`);
+	if (existsSync(own)) return own;
+	if (existsSync(note.source)) {
+		await waitStable(note.source);
+		mkdirSync(dir, { recursive: true });
+		await copyFile(note.source, own);
+		return own;
+	}
+	const legacy = join(dir, "audio.mp3");
+	return existsSync(legacy) ? legacy : null;
+}
 
 function receivedAt(fileName: string, path: string) {
 	const m = fileName.match(/(\d{4}-\d{2}-\d{2}) at (\d{1,2})\.(\d{2})\.(\d{2})/);
@@ -103,24 +128,17 @@ function receivedAt(fileName: string, path: string) {
 	return new Date(d.getTime() - off).toISOString().slice(0, 19);
 }
 
+// afinfo ships with macOS and reads Opus, Ogg, m4a, mp3 and aac.
 async function duration(path: string): Promise<number | null> {
-	const p = Bun.spawn(
-		["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
-		{ stdout: "pipe", stderr: "ignore", env: { ...process.env, PATH: BIN_PATH } },
-	);
-	const out = await new Response(p.stdout).text();
-	await p.exited;
-	const n = Number.parseFloat(out.trim());
-	return Number.isFinite(n) ? Math.round(n) : null;
-}
-
-async function convert(src: string, dst: string) {
-	const p = Bun.spawn(
-		["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-ac", "1", "-ar", "16000", "-b:a", "48k", dst],
-		{ stdout: "ignore", stderr: "pipe", env: { ...process.env, PATH: BIN_PATH } },
-	);
-	const err = await new Response(p.stderr).text();
-	if ((await p.exited) !== 0) throw new Error(`Couldn't read the audio file. ${err.trim().slice(0, 160)}`);
+	try {
+		const p = Bun.spawn(["/usr/bin/afinfo", path], { stdout: "pipe", stderr: "ignore" });
+		const out = await new Response(p.stdout).text();
+		await p.exited;
+		const n = Number.parseFloat(out.match(/estimated duration:\s*([\d.]+)/)?.[1] ?? "");
+		return Number.isFinite(n) ? Math.round(n) : null;
+	} catch {
+		return null;
+	}
 }
 
 async function waitStable(path: string) {
@@ -148,7 +166,7 @@ const SCHEMA = {
 	required: ["language", "transcript", "english", "summary", "action_items", "questions"],
 };
 
-const PROCESS_PROMPT = `Listen to the audio file audio.mp3 in the current folder. It is a WhatsApp voice note a client sent me. Only read that file; don't run commands or change anything.
+const processPrompt = (file: string) => `Listen to the audio file ${file} in the current folder. It is a WhatsApp voice note a client sent me. Only read that file; don't run commands or change anything.
 
 Reply with only a JSON object with these keys:
 - "language": the language or languages spoken, for example "English" or "Tagalog and English".
@@ -191,13 +209,9 @@ async function processNote(id: string): Promise<Note | null> {
 	const note = await patch(id, { status: "processing", error: "", errorKind: null });
 	if (!note) return null;
 	const dir = join(NOTES_DIR, id);
-	const mp3 = join(dir, "audio.mp3");
-	if (!existsSync(mp3)) {
-		if (!existsSync(note.source)) throw new Error("The audio file is no longer in Downloads.");
-		await waitStable(note.source);
-		await convert(note.source, mp3);
-	}
-	const { text, structured } = await runAgent(PROCESS_PROMPT, { cwd: dir, schema: SCHEMA });
+	const audio = await storedAudio(note);
+	if (!audio) throw new Error("The audio file is no longer in Downloads.");
+	const { text, structured } = await runAgent(processPrompt(basename(audio)), { cwd: dir, schema: SCHEMA });
 	events?.onAuth(true);
 	const data = (structured ?? extractJson(text)) as Record<string, unknown>;
 	const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
@@ -211,7 +225,7 @@ async function processNote(id: string): Promise<Note | null> {
 		summary: str(data.summary),
 		actionItems: arr(data.action_items).map((text) => ({ text, done: false })),
 		questions: arr(data.questions),
-		duration: note.duration ?? (await duration(mp3)),
+		duration: note.duration ?? (await duration(audio)),
 	});
 }
 

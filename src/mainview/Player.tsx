@@ -40,7 +40,9 @@ export function Player({ id, duration }: { id: string; duration: number | null }
 			if (!src) throw new Error("missing");
 			const a = new Audio(src);
 			a.ontimeupdate = () => setTime(a.currentTime);
-			a.onloadedmetadata = () => Number.isFinite(a.duration) && setTotal(a.duration);
+			// WebKit's estimate for Ogg files can be a second long, so the
+			// afinfo duration wins when there is one.
+			a.onloadedmetadata = () => !duration && Number.isFinite(a.duration) && setTotal(a.duration);
 			a.onplay = () => setPlaying(true);
 			a.onpause = () => setPlaying(false);
 			a.onended = () => {

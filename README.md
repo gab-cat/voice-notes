@@ -16,7 +16,7 @@ Built with Electrobun, Bun, React, Vite and Tailwind, sharing Focus Timer's look
 
 ## Requirements
 
-- macOS on Apple Silicon, Bun, and `ffmpeg` (`brew install ffmpeg`)
+- macOS on Apple Silicon and Bun
 - Antigravity CLI: `curl -fsSL https://antigravity.google/cli/install.sh | bash`, then run `agy` once to sign in with Google
 
 ## Develop
@@ -51,6 +51,6 @@ bunx vite -c vite.preview.config.ts   # http://localhost:5174
 
 ## How it works
 
-- `src/bun/notes.ts` watches Downloads, converts audio to mp3 with ffmpeg, queues notes and stores them in `~/Library/Application Support/Voice Notes/notes/<id>/`.
+- `src/bun/notes.ts` watches Downloads, copies each voice note as is (no conversion), queues notes and stores them in `~/Library/Application Support/Voice Notes/notes/<id>/`.
 - `src/bun/agent.ts` runs `agy -p … --output-format json --json-schema … --sandbox`. It never passes `--dangerously-skip-permissions`. In headless runs, tools that need approval are denied, so nothing said in a voice note can make the agent run commands.
 - Voice notes already in Downloads the first time the app runs are listed but not sent to the agent. Each has a Transcribe button.

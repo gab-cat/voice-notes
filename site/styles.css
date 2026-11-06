@@ -2236,7 +2236,7 @@ code {
 
 .steps {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 16px;
 	margin: 48px 0 0;
 	padding: 0;
@@ -2244,12 +2244,6 @@ code {
 }
 
 @media (max-width: 1000px) {
-	.steps {
-		grid-template-columns: 1fr 1fr;
-	}
-}
-
-@media (max-width: 560px) {
 	.steps {
 		grid-template-columns: minmax(0, 1fr);
 	}
