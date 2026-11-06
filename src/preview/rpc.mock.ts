@@ -7,7 +7,7 @@ const iso = (minsAgo: number) => {
 	return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 19);
 };
 
-const base = { fileName: "", source: "", file: "", addedAt: new Date(now.getTime() - 3 * 86_400_000).toISOString(), startedAt: new Date(now.getTime() - 14_000).toISOString(), error: "", errorKind: null, language: "", transcript: "", english: "", segments: [], summary: "", actionItems: [], questions: [], chat: [] };
+const base = { fileName: "", source: "", file: "", addedAt: new Date(now.getTime() - 3 * 86_400_000).toISOString(), startedAt: new Date(now.getTime() - 14_000).toISOString(), readAt: null as string | null, error: "", errorKind: null, language: "", transcript: "", english: "", segments: [], summary: "", actionItems: [], questions: [], chat: [] };
 
 const notes: Note[] = [
 	{
@@ -66,6 +66,26 @@ const notes: Note[] = [
 		transcript:
 			"Hey, just checking if the invoice for October already went out. I didn't see it in my inbox yet.\n\nAnd can the team join a call on Monday at 10? We want to walk through the new onboarding flow before the client sees it.\n\nLet me know, thanks.",
 		error: "Antigravity failed: the request timed out.",
+		readAt: iso(60 * 40),
+	},
+	{ ...base, id: "f", received: iso(2), status: "queued", duration: 17 },
+	{
+		...base,
+		id: "g",
+		received: iso(60 * 26),
+		status: "done",
+		duration: 46,
+		summary: "Wants the checkout button moved higher on mobile and asks whether Apple Pay can be added before the launch.",
+		transcript: "On mobile the checkout button is too far down, people miss it. Can we move it up? Also is Apple Pay possible before launch?",
+		readAt: iso(60 * 25),
+	},
+	{
+		...base,
+		id: "h",
+		received: iso(60 * 40),
+		status: "error",
+		duration: 9,
+		error: "Antigravity couldn't hear anything in this voice note.",
 	},
 ];
 
@@ -77,6 +97,7 @@ const summary = (n: Note): NoteSummary => ({
 	summary: n.summary,
 	errorKind: n.errorKind,
 	addedAt: n.addedAt,
+	readAt: n.readAt,
 });
 
 const noteListeners = new Set<(n: Note) => void>();
@@ -257,4 +278,25 @@ export const showAudioFolder = async () => {};
 	notes[i] = n;
 	noteListeners.forEach((fn) => fn({ ...n }));
 	listListeners.forEach((fn) => fn(notes.map(summary)));
+};
+
+export const markRead = async (id: string) => {
+	const i = notes.findIndex((n) => n.id === id);
+	if (i < 0 || notes[i].status !== "done" || notes[i].readAt) return;
+	notes[i] = { ...notes[i], readAt: iso(0) };
+	listListeners.forEach((fn) => fn(notes.map(summary)));
+};
+export const searchNotes = async (query: string) => {
+	const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+	return notes
+		.filter((n) => {
+			const hay = [n.summary, n.transcript, n.english, ...n.actionItems.map((i) => i.text), ...n.questions].join("\n").toLowerCase();
+			return terms.length && terms.every((t) => hay.includes(t));
+		})
+		.map((n) => {
+			if (terms.some((t) => n.summary.toLowerCase().includes(t))) return { id: n.id, snippet: "" };
+			const lower = n.transcript.toLowerCase();
+			const at = Math.max(0, Math.min(...terms.map((t) => lower.indexOf(t)).filter((i) => i >= 0)));
+			return { id: n.id, snippet: `${at > 40 ? "…" : ""}${n.transcript.slice(Math.max(0, at - 40), at + 120).replace(/\s+/g, " ")}…` };
+		});
 };

@@ -53,6 +53,13 @@ const PATHS = {
 		</>
 	),
 	chevron: <path d="M6.5 8.5L10 12l3.5-3.5" />,
+	search: (
+		<>
+			<circle cx="9" cy="9" r="4.75" />
+			<path d="M12.5 12.5L16 16" />
+		</>
+	),
+	close: <path d="M6.5 6.5l7 7M13.5 6.5l-7 7" />,
 	clock: (
 		<>
 			<circle cx="10" cy="10" r="6.5" />

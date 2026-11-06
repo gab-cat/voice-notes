@@ -5,7 +5,7 @@ import { activeIndex, dirOf, estimateSpans, noteAsText, paragraphs, stamp, toSrt
 import { IMPLODE_S, Listening } from "./Listening";
 import { SignInCard } from "./NoteList";
 import { type Playback, Player, usePlayback } from "./Player";
-import { dismissError, setItem, transcribe } from "./rpc";
+import { dismissError, markRead, setItem, transcribe } from "./rpc";
 import { Button, CopyButton, Icon, Segmented, Spinner } from "./ui";
 
 type Tab = "summary" | "transcript" | "chat";
@@ -21,6 +21,11 @@ function OneNote({ note }: { note: Note }) {
 	const [tab, setTab] = useState<Tab>("summary");
 	const done = note.status === "done";
 	const playback = usePlayback(note.id, note.duration);
+
+	// Seeing a transcript, including one that finishes while open, reads it.
+	useEffect(() => {
+		if (note.status === "done" && !note.readAt) void markRead(note.id).catch(() => {});
+	}, [note.id, note.status, note.readAt]);
 
 	// When a transcription finishes in view, the scene implodes over the result,
 	// and the result builds in behind it as the light comes back.

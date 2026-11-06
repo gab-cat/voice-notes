@@ -16,6 +16,7 @@ export type Note = {
 	file: string; // the audio in the app's voice notes folder, "" if missing
 	addedAt: string; // ISO UTC, when the app took the file; retention counts from here
 	startedAt: string | null; // ISO UTC, when the current transcription started
+	readAt: string | null; // ISO UTC, when the latest transcript was first opened
 	received: string; // ISO, local time
 	status: NoteStatus;
 	error: string;
@@ -33,8 +34,11 @@ export type Note = {
 
 export type NoteSummary = Pick<
 	Note,
-	"id" | "received" | "status" | "duration" | "summary" | "errorKind" | "addedAt"
+	"id" | "received" | "status" | "duration" | "summary" | "errorKind" | "addedAt" | "readAt"
 >;
+
+/** A search match: snippet is "" when the summary itself matched. */
+export type SearchHit = { id: string; snippet: string };
 
 export type Effort = "low" | "medium" | "high";
 
@@ -87,6 +91,8 @@ export type VoiceNotesRPC = {
 			transcribe: { params: { id: string; timed?: boolean }; response: Note | null };
 			retryAuthFailed: { params: {}; response: void };
 			dismissError: { params: { id: string }; response: Note | null };
+			markRead: { params: { id: string }; response: void };
+			searchNotes: { params: { query: string }; response: SearchHit[] };
 			sendChat: { params: { id: string; message: string }; response: Note };
 			setItem: { params: { id: string; index: number; done: boolean }; response: Note | null };
 			copyText: { params: { text: string }; response: void };

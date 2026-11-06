@@ -8,7 +8,7 @@ import { Utils } from "electrobun/bun";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { copyFile, link, readdir, readFile, rename, rm, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
-import type { Note, NoteSummary, PatternTest, Segment } from "../shared/types";
+import type { Note, NoteSummary, PatternTest, SearchHit, Segment } from "../shared/types";
 import { AgentError, extractJson, runAgent } from "./agent";
 import { debug } from "./debug";
 import { AUDIO_DIR, AUDIO_EXT, SUPPORT_DIR, compile, modelId, onChange, settings } from "./settings";
@@ -53,6 +53,8 @@ function loadAll() {
 				addedAt: n.addedAt ?? "",
 				startedAt: n.startedAt ?? null,
 				segments: n.segments ?? [],
+				// Transcripts from before read tracking count as read.
+				readAt: n.readAt !== undefined ? n.readAt : n.status === "done" ? n.addedAt || new Date().toISOString() : null,
 			} as Note);
 		} catch {}
 	}
@@ -81,7 +83,7 @@ async function patch(id: string, p: Partial<Note>) {
 export function listNotes(): NoteSummary[] {
 	return [...cache.values()]
 		.sort((a, b) => b.received.localeCompare(a.received))
-		.map(({ id, received, status, duration, summary, errorKind, addedAt }) => ({
+		.map(({ id, received, status, duration, summary, errorKind, addedAt, readAt }) => ({
 			id,
 			received,
 			status,
@@ -89,7 +91,48 @@ export function listNotes(): NoteSummary[] {
 			summary,
 			errorKind,
 			addedAt,
+			readAt,
 		}));
+}
+
+/** Opening a transcribed note marks it read. */
+export async function markRead(id: string) {
+	const note = cache.get(id);
+	if (!note || note.status !== "done" || note.readAt) return;
+	await patch(id, { readAt: new Date().toISOString() });
+}
+
+/**
+ * Notes whose summary, transcript, translation, to-dos or questions hold
+ * every word of the query. When the match is not in the summary, the hit
+ * carries the passage that matched, so the list can show why it is there.
+ */
+export function searchNotes(query: string): SearchHit[] {
+	const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+	if (!terms.length) return [];
+	const hits: SearchHit[] = [];
+	for (const n of cache.values()) {
+		const parts = [n.transcript, n.english, ...n.actionItems.map((i) => i.text), ...n.questions];
+		const hay = [n.summary, n.language, ...parts].join("\n").toLowerCase();
+		if (!terms.every((t) => hay.includes(t))) continue;
+		const summary = n.summary.toLowerCase();
+		hits.push({ id: n.id, snippet: terms.some((t) => summary.includes(t)) ? "" : passage(parts, terms) });
+	}
+	return hits;
+}
+
+function passage(parts: string[], terms: string[]) {
+	for (const text of parts) {
+		const lower = text.toLowerCase();
+		const found = terms.map((t) => lower.indexOf(t)).filter((i) => i >= 0);
+		if (!found.length) continue;
+		const at = Math.min(...found);
+		const start = Math.max(0, at - 40);
+		const end = Math.min(text.length, at + 120);
+		const body = text.slice(start, end).replace(/\s+/g, " ").trim();
+		return `${start > 0 ? "…" : ""}${body}${end < text.length ? "…" : ""}`;
+	}
+	return "";
 }
 
 export const getNote = (id: string) => cache.get(id) ?? null;
@@ -387,6 +430,7 @@ async function processNote(id: string): Promise<Note | null> {
 		return patch(id, {
 			status: "done",
 			startedAt: null,
+			readAt: null, // a fresh transcript is unread until opened
 			language: str(data.language),
 			transcript,
 			english,
@@ -486,6 +530,7 @@ async function register(fileName: string, file: string, source: string, status: 
 		file,
 		addedAt: new Date().toISOString(),
 		startedAt: null,
+		readAt: null,
 		received: receivedAt(fileName, file),
 		status,
 		error: "",

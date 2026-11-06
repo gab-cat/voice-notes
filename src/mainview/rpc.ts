@@ -73,6 +73,8 @@ export const getAudio = (id: string) => req().getAudio({ id });
 export const transcribe = (id: string, timed?: boolean) => req().transcribe({ id, timed });
 export const retryAuthFailed = () => req().retryAuthFailed({});
 export const dismissError = (id: string) => req().dismissError({ id });
+export const markRead = (id: string) => req().markRead({ id });
+export const searchNotes = (query: string) => req().searchNotes({ query });
 export const sendChat = (id: string, message: string) => req().sendChat({ id, message });
 export const setItem = (id: string, index: number, done: boolean) => req().setItem({ id, index, done });
 export const copyText = (text: string) => req().copyText({ text });
