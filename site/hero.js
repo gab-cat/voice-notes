@@ -120,11 +120,11 @@ function start() {
 		const dt = last ? Math.min(0.1, t - last) : 1 / 60;
 		last = t;
 		// The voice note's loudness, smoothed by time rather than by frame: it
-		// rises over about half a second and settles over about a second.
+		// rises quickly and settles a little slower, so it swells without snapping.
 		const target = window.vnLevel || 0;
-		const tau = target > level ? 0.45 : 0.9;
+		const tau = target > level ? 0.12 : 0.4;
 		level += (target - level) * (1 - Math.exp(-dt / tau));
-		const ease = 1 - Math.exp(-dt / 0.16);
+		const ease = 1 - Math.exp(-dt / 0.07);
 
 		for (let i = 0; i < count; i++) {
 			const x = xs[i];
@@ -135,15 +135,15 @@ function start() {
 				0.22 * (0.5 + 0.5 * Math.sin(x * 0.33 + t * 0.5)) * (0.5 + 0.5 * Math.cos(z * 0.42 - t * 0.9)) +
 				0.08 * Math.sin(x * 1.3 - z * 0.7 + t * 0.7);
 
-			// Sound: long, slow waves rolling out from the middle of the field,
-			// with a gentle rise along the centre line.
+			// Sound: waves rolling out from the middle of the field, with a tall
+			// rise along the centre line. Every term is a smooth sine, so it flows.
 			if (level > 0.002) {
 				const dz = z + 6;
 				const d = Math.sqrt(x * x + dz * dz);
-				const ring = 0.5 + 0.5 * Math.sin(d * 0.85 - t * 2.6);
-				const fall = Math.exp(-d * 0.085);
-				const spine = Math.exp(-(x * x) / 26);
-				h += level * (1.15 * ring * fall + 0.4 * spine * (0.5 + 0.5 * Math.sin(z * 0.55 - t * 1.8)));
+				const ring = 0.5 + 0.5 * Math.sin(d * 1.15 - t * 4.8);
+				const fall = Math.exp(-d * 0.08);
+				const spine = Math.exp(-(x * x) / 22);
+				h += level * (2 * ring * fall + 0.85 * spine * (0.5 + 0.5 * Math.sin(z * 0.8 - t * 3.6)));
 			}
 
 			// Cursor ripples: a wide, low front that grows in and fades out.

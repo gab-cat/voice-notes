@@ -372,12 +372,13 @@
 		hero.bars.forEach((b, i) => b.classList.toggle("on", i < lit));
 		$("#hn-time").textContent = clock(HERO_SECONDS - hero.t);
 
-		// How loud the voice is: slow, overlapping swells, like phrases rising
-		// and falling, with no syllable-by-syllable jitter.
+		// How loud the voice is: overlapping swells, like phrases and words
+		// rising and falling, without the syllable-by-syllable jitter.
 		const t = hero.t;
-		const phrase = 0.5 + 0.5 * Math.sin(t * 1.15 + 0.6);
-		const breath = 0.5 + 0.5 * Math.sin(t * 2.1 + 1.9);
-		window.vnLevel = Math.min(1, 0.4 + phrase * 0.38 + breath * 0.2);
+		const phrase = 0.5 + 0.5 * Math.sin(t * 1.7 + 0.6);
+		const word = 0.5 + 0.5 * Math.sin(t * 3.4 + 1.9);
+		const lilt = 0.5 + 0.5 * Math.sin(t * 5.7 + 0.4);
+		window.vnLevel = Math.min(1, 0.36 + phrase * 0.36 + word * 0.2 + lilt * 0.1);
 
 		// Words land a beat behind the audio, like a live transcript.
 		const target = Math.floor(Math.max(0, (hero.t - 0.6) / (HERO_SECONDS - 1)) * hero.words.length);
