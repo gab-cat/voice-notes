@@ -25,9 +25,6 @@ export class AgentError extends Error {
 	}
 }
 
-// Pinned so results don't shift when agy's default model changes.
-export const MODEL = "gemini-3.8-flash-medium";
-
 export const SIGN_IN_MESSAGE = "Sign in to Antigravity to transcribe voice notes.";
 
 type Envelope = {
@@ -39,7 +36,8 @@ type Envelope = {
 
 export async function runAgent(
 	prompt: string,
-	opts: { cwd: string; schema?: object; timeoutSec?: number },
+	// The model is always passed so results don't shift when agy's default changes.
+	opts: { cwd: string; model: string; schema?: object; timeoutSec?: number },
 ): Promise<{ text: string; structured: unknown }> {
 	if (!existsSync(AGY)) {
 		throw new AgentError("Antigravity CLI isn't installed. Install it from antigravity.google.", "missing-cli");
@@ -49,7 +47,7 @@ export async function runAgent(
 		"-p",
 		prompt,
 		"--model",
-		MODEL,
+		opts.model,
 		"--output-format",
 		"json",
 		"--disable-slash-commands",

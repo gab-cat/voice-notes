@@ -56,14 +56,14 @@ export function NoteList({
 			<UpdateBanner info={appInfo} />
 			{state.downloadsWaiting ? (
 				<div className="panel animate-rise mx-4 mb-3 p-3.5 text-[12.5px] leading-[1.5]">
-					macOS is asking whether Voice Notes can open your Downloads folder. Click Allow so it can find
-					WhatsApp voice notes.
+					macOS is asking whether Voice Notes can open {state.watchName}. Click Allow so it can find voice
+					notes.
 				</div>
 			) : null}
 			{state.downloadsBlocked ? (
 				<div className="panel mx-4 mb-3 p-3.5 text-[12.5px] leading-[1.5]">
-					macOS is blocking access to Downloads. Allow it in System Settings, Privacy & Security, Files and
-					Folders.
+					macOS is blocking access to {state.watchName}. Allow it in System Settings, Privacy & Security,
+					Files and Folders.
 				</div>
 			) : null}
 			{state.signedIn === false ? <SignInCard /> : null}
@@ -88,7 +88,9 @@ export function NoteList({
 						<li key={n.id} className="animate-rise" style={{ ["--i" as string]: Math.min(i, 10) }}>
 							<button
 								onClick={() => onOpen(n.id)}
-								className="press-soft block w-full px-3.5 py-3 text-left hover:bg-ink/[0.035] active:bg-ink/[0.06]"
+								className={`press-soft block w-full px-3.5 py-3 text-left hover:bg-ink/[0.035] active:bg-ink/[0.06] ${
+									n.status === "processing" ? "row-scan" : ""
+								}`}
 							>
 								<div className="flex items-baseline justify-between gap-3">
 									<span className="text-[13px] font-medium">

@@ -2,7 +2,8 @@
 const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 
 export default {
-	darkMode: "class",
+	// The dimmed window while transcribing (.immersive) uses the dark styles too.
+	darkMode: ["variant", "&:is(.dark *, .immersive *, .immersive)"],
 	content: ["./src/mainview/**/*.{html,js,ts,jsx,tsx}"],
 	theme: {
 		extend: {

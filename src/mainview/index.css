@@ -20,7 +20,8 @@
 	color-scheme: light;
 }
 
-.dark {
+.dark,
+.immersive {
 	--bg: 12 12 13;
 	--bg-2: 17 17 19;
 	--surface: 22 22 25;
@@ -34,6 +35,14 @@
 	--warn: 242 188 92;
 	--danger: 238 112 100;
 	color-scheme: dark;
+}
+
+/* While a voice note is transcribed the whole window dims. */
+.immersive {
+	--bg: 9 8 15;
+	--surface: 22 19 34;
+	--surface-2: 30 26 44;
+	--line: 52 46 74;
 }
 
 /* ── Base ───────────────────────────────────────────────────────────────── */
@@ -151,18 +160,20 @@ body::after {
 		filter: blur(0);
 	}
 }
+/* The old screen clears in a few frames and the new one starts a beat
+   later, so the two never ghost over each other. */
 @keyframes view-out {
 	to {
 		opacity: 0;
-		transform: translateX(calc(var(--dir, 1) * -22px)) scale(0.985);
-		filter: blur(3px);
+		transform: translateX(calc(var(--dir, 1) * -12px)) scale(0.99);
+		filter: blur(2px);
 	}
 }
 .animate-view-in {
-	animation: view-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation: view-in 420ms 90ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .animate-view-out {
-	animation: view-out 260ms cubic-bezier(0.4, 0, 1, 1) both;
+	animation: view-out 120ms cubic-bezier(0.1, 0, 0.3, 1) both;
 }
 
 @keyframes pulse-dot {
@@ -228,6 +239,204 @@ body::after {
 	animation-delay: calc(var(--i) * 150ms);
 }
 
+/* ── Transcribing scene ──────────────────────────────────────────────── */
+
+.app-root {
+	background: rgb(var(--bg));
+	color: rgb(var(--ink));
+	transition: background-color 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.app-root > header h1 {
+	transition: color 700ms ease;
+}
+:root .immersive .panel {
+	background: rgb(var(--surface) / 0.55);
+	-webkit-backdrop-filter: blur(14px) saturate(140%);
+	backdrop-filter: blur(14px) saturate(140%);
+	box-shadow:
+		inset 0 1px 0 rgb(255 255 255 / 0.06),
+		0 0 0 1px rgb(var(--line) / 0.9);
+}
+
+.scene {
+	isolation: isolate;
+}
+/* One soft light behind the orb, breathing slowly. */
+.scene-glow {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: radial-gradient(46% 34% at 50% 47%, rgb(96 60 220 / 0.32), transparent 72%);
+	animation: glow-breathe 7s ease-in-out infinite alternate;
+	transition: opacity 1200ms ease;
+}
+.scene-glow-dim {
+	opacity: 0.35;
+}
+@keyframes glow-breathe {
+	to {
+		transform: scale(1.12);
+		opacity: 0.8;
+	}
+}
+
+.scene-label {
+	animation: rise 900ms 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes scene-in {
+	from {
+		opacity: 0;
+	}
+}
+.animate-scene-in {
+	animation: scene-in 700ms ease-out both;
+}
+
+/* The result arrives: the orb flares (on the canvas), then the scene lifts away. */
+.scene-leaving {
+	animation: scene-out 1050ms linear both;
+}
+/* Matches the canvas: dark while everything is drawn in, then the dark lifts
+   under the bloom, so the light lands on the page instead of turning grey. */
+@keyframes scene-out {
+	0%,
+	64% {
+		background-color: rgb(9 8 15);
+		opacity: 1;
+	}
+	76% {
+		background-color: rgb(9 8 15 / 0);
+		opacity: 1;
+	}
+	80% {
+		background-color: rgb(9 8 15 / 0);
+		opacity: 1;
+	}
+	100% {
+		background-color: rgb(9 8 15 / 0);
+		opacity: 0;
+	}
+}
+
+/* The result builds in as the light comes back: blocks rise into focus one
+   after another, and the summary's words arrive one by one. */
+.reveal .animate-rise,
+.reveal .animate-swap {
+	animation: none;
+}
+.reveal [data-reveal] {
+	animation: reveal-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	animation-delay: calc(640ms + var(--r, 0) * 90ms);
+}
+@keyframes reveal-in {
+	from {
+		opacity: 0;
+		transform: translateY(18px) scale(0.97);
+		filter: blur(10px);
+	}
+}
+.reveal-word {
+	display: inline-block;
+	animation: word-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	animation-delay: calc(820ms + var(--w) * 16ms);
+}
+@keyframes word-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+		filter: blur(6px);
+	}
+}
+
+/* The speed label rolls up to its new value. */
+@keyframes rate-in {
+	from {
+		opacity: 0;
+		transform: translateY(70%);
+		filter: blur(2px);
+	}
+}
+.animate-rate {
+	display: inline-block;
+	animation: rate-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* A processing row in the list: light passes through it. */
+.row-scan {
+	position: relative;
+	overflow: hidden;
+}
+.row-scan::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: linear-gradient(100deg, transparent 30%, rgb(var(--accent) / 0.09) 50%, transparent 70%);
+	transform: translateX(-100%);
+	animation: row-scan 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes row-scan {
+	to {
+		transform: translateX(100%);
+	}
+}
+
+/* ── Feedback ─────────────────────────────────────────────────────────── */
+
+@keyframes fade {
+	from {
+		opacity: 0;
+	}
+}
+.animate-fade {
+	animation: fade 240ms ease-out both;
+}
+@keyframes sheet {
+	from {
+		opacity: 0;
+		transform: translateY(24px) scale(0.98);
+	}
+}
+.animate-sheet {
+	animation: sheet 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes toast {
+	0% {
+		opacity: 0;
+		transform: translateY(12px) scale(0.96);
+	}
+	12%,
+	85% {
+		opacity: 1;
+		transform: none;
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+}
+.animate-toast {
+	animation: toast 2400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes saved {
+	0% {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	15%,
+	75% {
+		opacity: 1;
+		transform: none;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+.animate-saved {
+	animation: saved 1600ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
@@ -236,6 +445,13 @@ body::after {
 		animation-iteration-count: 1 !important;
 		animation-delay: 0ms !important;
 		transition-duration: 1ms !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.scene-glow,
+	.row-scan::before {
+		animation: none !important;
 	}
 }
 

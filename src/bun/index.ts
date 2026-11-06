@@ -1,10 +1,11 @@
 import Electrobun, { BrowserView, BrowserWindow, Screen, Tray, Updater, Utils } from "electrobun/bun";
-import { mkdirSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import type { AppInfo, AppState, Note, NoteSummary, VoiceNotesRPC } from "../shared/types";
+import { writeFile } from "node:fs/promises";
+import { basename, join } from "node:path";
+import type { AppInfo, AppState, Note, NoteSummary, SettingsInfo, VoiceNotesRPC } from "../shared/types";
 import { AGY } from "./agent";
 import * as notes from "./notes";
+import * as prefs from "./settings";
+import { save as saveSettings, settings } from "./settings";
 import * as updates from "./updates";
 import { debug } from "./debug";
 
@@ -13,17 +14,12 @@ debug("app starting");
 const DEV_SERVER_URL = "http://localhost:5173";
 const WIDTH = 380;
 const HEIGHT = 600;
-const SETTINGS_FILE = join(notes.SUPPORT_DIR, "settings.json");
 
-type Settings = { pinned: boolean; x: number | null; y: number | null };
-let settings: Settings = { pinned: true, x: null, y: null };
-try {
-	settings = { ...settings, ...JSON.parse(await readFile(SETTINGS_FILE, "utf8")) };
-} catch {}
-const saveSettings = () => writeFile(SETTINGS_FILE, JSON.stringify(settings)).catch(() => {});
+const folderName = (dir: string) => basename(dir) || dir;
 
 const state: AppState = {
 	pinned: settings.pinned,
+	watchName: folderName(settings.watchDir),
 	downloadsBlocked: false,
 	downloadsWaiting: false,
 	signedIn: null,
@@ -58,8 +54,9 @@ const rpc = BrowserView.defineRPC<VoiceNotesRPC>({
 			},
 			getNote: ({ id }) => notes.getNote(id),
 			getAudio: ({ id }) => notes.getAudio(id),
-			transcribe: ({ id }) => notes.transcribe(id),
+			transcribe: ({ id, timed }) => notes.transcribe(id, timed),
 			retryAuthFailed: () => notes.retryAuthFailed(),
+			dismissError: ({ id }) => notes.dismissError(id),
 			sendChat: ({ id, message }) => notes.sendChat(id, message),
 			setItem: ({ id, index, done }) => notes.setItem(id, index, done),
 			copyText: ({ text }) => Utils.clipboardWriteText(text),
@@ -73,7 +70,7 @@ const rpc = BrowserView.defineRPC<VoiceNotesRPC>({
 			},
 			openSignIn: async () => {
 				// A .command file opens in Terminal without needing Apple Events access.
-				const script = join(notes.SUPPORT_DIR, "Sign in to Antigravity.command");
+				const script = join(prefs.SUPPORT_DIR, "Sign in to Antigravity.command");
 				await writeFile(
 					script,
 					`#!/bin/zsh\nclear\necho "Sign in with Google, paste the code here, then type /quit and go back to Voice Notes."\necho\n"${AGY}"\n`,
@@ -92,16 +89,48 @@ const rpc = BrowserView.defineRPC<VoiceNotesRPC>({
 				return { ...updates.appInfo };
 			},
 			applyUpdate: () => updates.applyUpdate(),
+			deleteNote: ({ id }) => notes.deleteNote(id),
+			getSettings: () => settingsInfo(),
+			setPreferences: (p) => {
+				prefs.update(p);
+				return settingsInfo();
+			},
+			testPattern: ({ pattern, watchDir }) => notes.testPattern(pattern, watchDir),
+			chooseFolder: async ({ start }) => {
+				const picked = await Utils.openFileDialog({
+					startingFolder: start,
+					canChooseFiles: false,
+					canChooseDirectory: true,
+					allowsMultipleSelection: false,
+				}).catch(() => [] as string[]);
+				return picked.find((p) => p.trim()) ?? null;
+			},
+			showAudioFolder: () => {
+				Utils.openPath(prefs.AUDIO_DIR);
+			},
 		},
 		messages: {},
 	},
 });
 
+function settingsInfo(): SettingsInfo {
+	return { prefs: prefs.prefs(), defaults: prefs.DEFAULTS, audioDir: prefs.AUDIO_DIR, models: prefs.listModels() };
+}
+
+prefs.onChange(() => {
+	const name = folderName(settings.watchDir);
+	if (name === state.watchName) return;
+	state.watchName = name;
+	pushState();
+});
+void prefs.loadModels();
+
 async function viewUrl() {
 	if ((await Updater.localInfo.channel()) === "dev") {
+		// Only when it's this app's dev server: another project often has 5173.
 		try {
-			await fetch(DEV_SERVER_URL, { method: "HEAD" });
-			return DEV_SERVER_URL;
+			const html = await fetch(DEV_SERVER_URL, { signal: AbortSignal.timeout(1500) }).then((r) => r.text());
+			if (/<title>Voice Notes<\/title>/.test(html)) return DEV_SERVER_URL;
 		} catch {}
 	}
 	return "views://mainview/index.html";
@@ -228,7 +257,6 @@ await updates.startUpdates((info) => {
 
 // ── notes ──────────────────────────────────────────────────────────────────
 
-mkdirSync(notes.SUPPORT_DIR, { recursive: true });
 debug("starting notes");
 await notes.start({
 	onListChanged: (list) => {
@@ -238,9 +266,11 @@ await notes.start({
 	onNoteChanged: (note) => send()?.noteChanged(note),
 	onFinished: (note) => {
 		Utils.showNotification(
-			note.status === "done"
+			note.status === "done" && !note.error
 				? { title: "Voice note transcribed", body: note.summary.slice(0, 180) }
-				: { title: "Voice note failed", body: note.error.slice(0, 180) },
+				: note.status === "done"
+					? { title: "Couldn't transcribe again", body: `The earlier transcript is kept. ${note.error}`.slice(0, 180) }
+					: { title: "Voice note failed", body: note.error.slice(0, 180) },
 		);
 	},
 	onNewNote: (id) => {

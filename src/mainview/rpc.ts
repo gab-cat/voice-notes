@@ -1,5 +1,5 @@
 import { Electroview } from "electrobun/view";
-import type { AppInfo, AppState, Note, NoteSummary, VoiceNotesRPC } from "../shared/types";
+import type { AppInfo, AppState, Note, NoteSummary, Preferences, VoiceNotesRPC } from "../shared/types";
 
 type Listeners = {
 	notes: Set<(l: NoteSummary[]) => void>;
@@ -70,8 +70,9 @@ export const listNotes = () => read(() => req().listNotes({}));
 export const getNote = (id: string) => read(() => req().getNote({ id }));
 export const takeFocus = () => read(() => req().takeFocus({}));
 export const getAudio = (id: string) => req().getAudio({ id });
-export const transcribe = (id: string) => req().transcribe({ id });
+export const transcribe = (id: string, timed?: boolean) => req().transcribe({ id, timed });
 export const retryAuthFailed = () => req().retryAuthFailed({});
+export const dismissError = (id: string) => req().dismissError({ id });
 export const sendChat = (id: string, message: string) => req().sendChat({ id, message });
 export const setItem = (id: string, index: number, done: boolean) => req().setItem({ id, index, done });
 export const copyText = (text: string) => req().copyText({ text });
@@ -81,3 +82,9 @@ export const openSignIn = () => req().openSignIn({});
 export const getAppInfo = () => read(() => req().getAppInfo({}));
 export const checkForUpdate = () => req().checkForUpdate({});
 export const applyUpdate = () => req().applyUpdate({});
+export const deleteNote = (id: string) => req().deleteNote({ id });
+export const getSettings = () => read(() => req().getSettings({}));
+export const setPreferences = (p: Partial<Preferences>) => req().setPreferences(p);
+export const testPattern = (pattern: string, watchDir: string) => req().testPattern({ pattern, watchDir });
+export const chooseFolder = (start: string) => req().chooseFolder({ start });
+export const showAudioFolder = () => req().showAudioFolder({});

@@ -39,6 +39,28 @@ const PATHS = {
 		</>
 	),
 	folder: <path d="M3.5 6.5a2 2 0 0 1 2-2h3l1.5 1.8h4.5a2 2 0 0 1 2 2v5.7a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2z" />,
+	sliders: (
+		<>
+			<path d="M4 6h5M13 6h3M4 14h2M10 14h6" />
+			<circle cx="11" cy="6" r="2" />
+			<circle cx="8" cy="14" r="2" />
+		</>
+	),
+	trash: (
+		<>
+			<path d="M4.5 6h11M8 6V4.5h4V6" />
+			<path d="M6 6l.7 9.2a1.5 1.5 0 0 0 1.5 1.3h3.6a1.5 1.5 0 0 0 1.5-1.3L14 6" />
+		</>
+	),
+	chevron: <path d="M6.5 8.5L10 12l3.5-3.5" />,
+	clock: (
+		<>
+			<circle cx="10" cy="10" r="6.5" />
+			<path d="M10 6.5V10l2.4 1.6" />
+		</>
+	),
+	minus: <path d="M5.5 10h9" />,
+	plus: <path d="M10 5.5v9M5.5 10h9" />,
 } as const;
 
 export type IconName = keyof typeof PATHS;
@@ -127,7 +149,7 @@ export function Button({
 }: {
 	children: ReactNode;
 	onClick: () => void;
-	tone?: "default" | "accent";
+	tone?: "default" | "accent" | "danger";
 	disabled?: boolean;
 	busy?: boolean;
 	icon?: IconName;
@@ -135,7 +157,9 @@ export function Button({
 	const tones =
 		tone === "accent"
 			? "bg-accent text-accent-ink hover:brightness-105"
-			: "bg-ink/[0.06] text-ink hover:bg-ink/[0.1] dark:bg-ink/[0.08] dark:hover:bg-ink/[0.12]";
+			: tone === "danger"
+				? "bg-danger text-white hover:brightness-105"
+				: "bg-ink/[0.06] text-ink hover:bg-ink/[0.1] dark:bg-ink/[0.08] dark:hover:bg-ink/[0.12]";
 	return (
 		<button
 			onClick={onClick}
@@ -168,7 +192,7 @@ export function IconButton({
 			title={label}
 			aria-pressed={active}
 			className={`press grid h-[28px] w-[28px] place-items-center rounded-[7px] ${
-				active ? "bg-accent/15 text-accent" : "text-ink-2 hover:bg-ink/[0.07] hover:text-ink"
+				active ? "bg-accent/15 text-accent" : "text-ink-2 hover:bg-ink/[0.07] hover:text-ink active:bg-ink/[0.1]"
 			} ${className}`}
 		>
 			<Icon name={icon} size={16} />
@@ -220,5 +244,25 @@ export function Bars({ heights, active, className = "" }: { heights: number[]; a
 				/>
 			))}
 		</div>
+	);
+}
+
+export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+	return (
+		<button
+			role="switch"
+			aria-checked={checked}
+			aria-label={label}
+			onClick={() => onChange(!checked)}
+			className={`press relative h-[20px] w-[34px] shrink-0 rounded-full transition-colors duration-300 ${
+				checked ? "bg-accent" : "bg-ink/[0.16]"
+			}`}
+		>
+			<span
+				className={`absolute top-[2px] h-[16px] w-[16px] rounded-full bg-white transition-all duration-[420ms] ease-spring ${
+					checked ? "left-[16px]" : "left-[2px]"
+				}`}
+			/>
+		</button>
 	);
 }
