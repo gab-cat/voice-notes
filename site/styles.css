@@ -75,9 +75,7 @@
 	/* Cards stay barely rounded; controls a touch more. */
 	--r-card: 8px;
 	--r-ctl: 10px;
-	/* Content runs wide: up to 1600px, with gutters that grow with the screen. */
-	--max: 1600px;
-	--gutter: clamp(16px, 3.6vw, 64px);
+	--gutter: 24px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -203,9 +201,15 @@ svg {
 
 .wrap {
 	width: 100%;
-	max-width: calc(var(--max) + 2 * var(--gutter));
+	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0 var(--gutter);
+}
+
+@media (max-width: 640px) {
+	:root {
+		--gutter: 16px;
+	}
 }
 
 [data-icon] {
@@ -413,7 +417,7 @@ code {
 	display: flex;
 	align-items: center;
 	gap: 18px;
-	max-width: var(--max);
+	max-width: 1152px;
 	height: 56px;
 	margin: 0 auto;
 	padding: 0 8px 0 10px;
@@ -429,9 +433,8 @@ code {
 		background-color 400ms;
 }
 
-/* Pulls in a little once you scroll, whatever the screen width. */
 .nav.is-stuck .nav-bar {
-	max-width: calc(min(var(--max), 100%) - 96px);
+	max-width: 1060px;
 	background: rgb(var(--surface) / 0.8);
 }
 
@@ -652,18 +655,16 @@ code {
 
 .hero-copy {
 	text-align: center;
+	max-width: 1120px;
 }
 
-/* "already written down." is about 10.5em wide, so 8vw keeps it on one line
-   inside the content width, and 150px keeps it inside --max. */
 .hero h1 {
 	margin: 0;
 	font-family: var(--display);
 	font-weight: 600;
-	font-size: clamp(46px, 8vw, 150px);
-	line-height: 0.94;
-	letter-spacing: -0.022em;
-	word-spacing: 0.04em;
+	font-size: clamp(46px, 7.6vw, 104px);
+	line-height: 0.96;
+	letter-spacing: -0.02em;
 	text-wrap: balance;
 }
 
@@ -676,9 +677,9 @@ code {
 }
 
 .hero-sub {
-	margin: 28px auto 0;
+	margin: 24px auto 0;
 	max-width: 46ch;
-	font-size: clamp(17px, 1.45vw, 22px);
+	font-size: clamp(17px, 1.6vw, 20px);
 	line-height: 1.5;
 	text-wrap: pretty;
 }
@@ -803,63 +804,26 @@ code {
 
 .section {
 	position: relative;
-	padding: clamp(88px, 9vw, 150px) 0;
+	padding: 112px 0;
 }
 
-/* Section titles are set big, like a magazine spread: they run the full
-   width of the page and the content sits under them. */
 .h2 {
 	margin: 0;
+	max-width: 20ch;
 	font-family: var(--display);
 	font-weight: 600;
-	font-size: clamp(40px, 6.4vw, 120px);
-	line-height: 0.94;
-	letter-spacing: -0.022em;
-	word-spacing: 0.04em;
+	font-size: clamp(34px, 4.4vw, 56px);
+	line-height: 1.02;
+	letter-spacing: -0.015em;
 	text-wrap: balance;
 }
 
 .lede {
-	margin: clamp(20px, 2vw, 32px) 0 0;
-	max-width: 52ch;
-	font-size: clamp(18px, 1.4vw, 22px);
-	line-height: 1.5;
+	margin: 18px 0 0;
+	max-width: 54ch;
+	font-size: 18px;
+	line-height: 1.55;
 	text-wrap: pretty;
-}
-
-/* The purple half of a title starts on its own line, like the hero's,
-   or stays in one piece when it's short. */
-.h2 .line {
-	display: block;
-}
-
-.h2 .nowrap {
-	white-space: nowrap;
-}
-
-/* Titles come in word by word (app.js splits them into .w spans). */
-.h2.reveal.split {
-	opacity: 1;
-	transform: none;
-	filter: none;
-}
-
-.h2 .w {
-	display: inline-block;
-	opacity: 0;
-	transform: translateY(0.32em);
-	filter: blur(8px);
-	transition:
-		opacity 900ms var(--out-expo),
-		transform 1000ms var(--out-expo),
-		filter 900ms var(--out-expo);
-	transition-delay: calc(var(--w, 0) * 55ms);
-}
-
-.h2.in .w {
-	opacity: 1;
-	transform: none;
-	filter: none;
 }
 
 .reveal {
@@ -888,10 +852,9 @@ code {
 
 .demo-grid {
 	display: grid;
-	grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-	gap: clamp(40px, 5vw, 96px);
-	align-items: start;
-	margin-top: clamp(40px, 4.5vw, 72px);
+	grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr);
+	gap: 56px;
+	align-items: center;
 }
 
 @media (max-width: 1000px) {
@@ -899,10 +862,6 @@ code {
 		grid-template-columns: minmax(0, 1fr);
 		gap: 40px;
 	}
-}
-
-.demo-copy .lede {
-	margin-top: 0;
 }
 
 .downloads {
@@ -2868,7 +2827,7 @@ code {
 
 .pipe {
 	position: relative;
-	margin-top: clamp(48px, 5vw, 80px);
+	margin-top: 56px;
 }
 
 .pipe-track {
@@ -2917,13 +2876,11 @@ code {
 .step h3,
 .fact h3,
 .tile h3 {
-	margin: 18px 0 8px;
+	margin: 16px 0 6px;
 	font-family: var(--display);
 	font-weight: 600;
-	font-size: clamp(20px, 1.7vw, 27px);
-	line-height: 1.15;
-	letter-spacing: -0.01em;
-	word-spacing: 0.03em;
+	font-size: 20px;
+	line-height: 1.2;
 }
 
 .pipe-step p,
@@ -2931,8 +2888,7 @@ code {
 .fact p,
 .tile p {
 	margin: 0;
-	max-width: 46ch;
-	font-size: clamp(15px, 1.12vw, 17px);
+	font-size: 15px;
 	line-height: 1.55;
 	text-wrap: pretty;
 }
@@ -2983,12 +2939,12 @@ code {
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
 	gap: 16px;
-	margin-top: clamp(40px, 4.5vw, 72px);
+	margin-top: 48px;
 }
 
 .tile {
 	grid-column: span 2;
-	padding: 20px 20px 26px;
+	padding: 18px 18px 22px;
 	border-radius: var(--r-card);
 	background: rgb(var(--surface));
 	box-shadow:
@@ -3013,7 +2969,7 @@ code {
 .tile-vis {
 	display: grid;
 	place-items: center;
-	height: clamp(190px, 16vw, 260px);
+	height: 190px;
 	border-radius: 6px;
 	background:
 		radial-gradient(ellipse 70% 80% at 50% 100%, rgb(var(--accent) / 0.1), transparent 70%),
@@ -3023,7 +2979,7 @@ code {
 }
 
 .mini-todo {
-	width: min(440px, 86%);
+	width: min(340px, 86%);
 	border-radius: 8px;
 	background: rgb(var(--surface));
 	box-shadow: 0 0 0 1px rgb(var(--line));
@@ -3034,8 +2990,8 @@ code {
 	display: flex;
 	gap: 10px;
 	align-items: center;
-	padding: 12px 14px;
-	font-size: clamp(13px, 1vw, 15px);
+	padding: 10px 12px;
+	font-size: 13px;
 }
 
 .mt-row + .mt-row {
@@ -3095,7 +3051,7 @@ code {
 	gap: 10px;
 	align-items: flex-start;
 	font-family: "Geist", var(--sans);
-	font-size: clamp(14px, 1.05vw, 16px);
+	font-size: 14px;
 }
 
 .ma-q {
@@ -3148,12 +3104,12 @@ code {
 
 .mc-out {
 	width: 100%;
-	min-height: clamp(104px, 8.5vw, 136px);
+	min-height: 104px;
 	margin: 0;
 	padding: 10px 12px;
 	border-radius: 6px;
 	font-family: "Geist Mono", var(--mono);
-	font-size: clamp(10.5px, 0.8vw, 12px);
+	font-size: 10.5px;
 	line-height: 1.5;
 	white-space: pre-wrap;
 	background: rgb(var(--surface));
@@ -3165,9 +3121,9 @@ code {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	width: min(500px, 88%);
+	width: min(400px, 88%);
 	font-family: "Geist", var(--sans);
-	font-size: clamp(13px, 1vw, 15px);
+	font-size: 13px;
 	line-height: 1.5;
 }
 
@@ -3197,14 +3153,9 @@ code {
 
 .lang-grid {
 	display: grid;
-	grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-	gap: clamp(32px, 5vw, 96px);
-	align-items: start;
-	margin-top: clamp(20px, 2vw, 32px);
-}
-
-.lang-grid .lede {
-	margin-top: 0;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+	gap: 56px;
+	align-items: center;
 }
 
 @media (max-width: 900px) {
@@ -3234,22 +3185,21 @@ code {
 
 .lang-body p {
 	margin: 0 0 14px;
-	max-width: 62ch;
-	font-size: clamp(16px, 1.2vw, 18px);
+	font-size: 16px;
 	line-height: 1.65;
 	animation: swap-in 620ms var(--out-expo) both;
 	animation-delay: calc(var(--i, 0) * 80ms);
 }
 
 .lang-body p[dir="rtl"] {
-	font-size: clamp(17px, 1.3vw, 19px);
+	font-size: 17px;
 }
 
 /* ── Safety ─────────────────────────────────────────────────────────────── */
 
 .cmd {
-	margin-top: clamp(40px, 4.5vw, 72px);
-	padding: 18px 20px;
+	margin-top: 40px;
+	padding: 16px 18px;
 	border-radius: var(--r-card);
 	background: rgb(var(--surface));
 	box-shadow:
@@ -3273,8 +3223,8 @@ code {
 .facts {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
-	gap: clamp(32px, 4vw, 64px);
-	margin-top: clamp(40px, 4vw, 64px);
+	gap: 32px;
+	margin-top: 40px;
 }
 
 @media (max-width: 860px) {
@@ -3294,7 +3244,7 @@ code {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 16px;
-	margin: clamp(40px, 4.5vw, 72px) 0 0;
+	margin: 48px 0 0;
 	padding: 0;
 	list-style: none;
 }
@@ -3307,7 +3257,7 @@ code {
 
 .step {
 	min-width: 0;
-	padding: 24px;
+	padding: 20px;
 	border-radius: var(--r-card);
 	background: rgb(var(--surface));
 	box-shadow:
@@ -3367,36 +3317,20 @@ code {
 .faq-grid {
 	display: grid;
 	grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-	gap: clamp(32px, 5vw, 96px);
+	gap: 56px;
 	align-items: start;
-	margin-top: clamp(20px, 2vw, 32px);
 }
 
 @media (max-width: 900px) {
 	.faq-grid {
 		grid-template-columns: minmax(0, 1fr);
-		gap: 24px;
+		gap: 32px;
 	}
 }
 
 .faq-head {
 	position: sticky;
 	top: 110px;
-}
-
-/* Lines up with the first question. */
-.faq-head .lede {
-	margin-top: 0;
-	padding-top: 20px;
-}
-
-@media (max-width: 900px) {
-	.faq-head {
-		position: static;
-	}
-	.faq-head .lede {
-		padding-top: 0;
-	}
 }
 
 .qa {
@@ -3409,21 +3343,11 @@ code {
 	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
-	padding: 22px 0;
+	padding: 20px 0;
 	cursor: pointer;
 	list-style: none;
-	font-size: clamp(17px, 1.4vw, 21px);
+	font-size: 17px;
 	font-weight: 600;
-	transition: color 200ms;
-}
-
-.qa summary:hover {
-	color: rgb(var(--accent));
-}
-
-.qa summary:hover .plus::before,
-.qa summary:hover .plus::after {
-	background: rgb(var(--accent));
 }
 
 .qa summary::-webkit-details-marker {
@@ -3459,9 +3383,9 @@ code {
 }
 
 .ans {
-	padding: 0 0 24px;
+	padding: 0 0 22px;
 	max-width: 60ch;
-	font-size: clamp(16px, 1.15vw, 18px);
+	font-size: 16px;
 	line-height: 1.6;
 	animation: rise 420ms var(--out) both;
 }
@@ -3553,7 +3477,7 @@ code {
 }
 
 .bar-word {
-	height: clamp(90px, 15vw, 250px);
+	height: clamp(90px, 15vw, 190px);
 	margin: 56px 0 28px;
 	cursor: crosshair;
 }
@@ -3840,8 +3764,7 @@ code {
 		transition-duration: 1ms !important;
 		transition-delay: 0ms !important;
 	}
-	.reveal,
-	.h2 .w {
+	.reveal {
 		filter: none;
 	}
 	.scene-glow,

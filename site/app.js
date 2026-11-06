@@ -372,13 +372,11 @@
 		hero.bars.forEach((b, i) => b.classList.toggle("on", i < lit));
 		$("#hn-time").textContent = clock(HERO_SECONDS - hero.t);
 
-		// How loud the voice is: overlapping swells, like phrases and words
-		// rising and falling, without the syllable-by-syllable jitter.
+		// A speech-like envelope: syllables inside phrases, with short pauses.
 		const t = hero.t;
 		const phrase = 0.5 + 0.5 * Math.sin(t * 1.7 + 0.6);
-		const word = 0.5 + 0.5 * Math.sin(t * 3.4 + 1.9);
-		const lilt = 0.5 + 0.5 * Math.sin(t * 5.7 + 0.4);
-		window.vnLevel = Math.min(1, 0.36 + phrase * 0.36 + word * 0.2 + lilt * 0.1);
+		const syll = Math.abs(Math.sin(t * 9.1) * Math.sin(t * 3.3 + 1.2));
+		window.vnLevel = Math.min(1, 0.25 + phrase * 0.35 + syll * 0.55);
 
 		// Words land a beat behind the audio, like a live transcript.
 		const target = Math.floor(Math.max(0, (hero.t - 0.6) / (HERO_SECONDS - 1)) * hero.words.length);
@@ -668,14 +666,13 @@
 		$("#dm-clock").textContent = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 	}
 
-	// The desk is a fixed-height scene. It widens with its column up to 900px
-	// (more desktop around the window), and below 680px it's scaled to fit. On
-	// narrow screens it shrinks to just around the window so the window stays readable.
+	// The desk is a fixed-size scene, scaled to fit. On narrow screens it
+	// shrinks to just around the window so the window stays readable.
 	function fitDesk() {
 		const stage = $("#desk-stage");
 		const desk = $("#desk");
 		const w = stage.clientWidth;
-		const deskW = w < 520 ? 420 : Math.round(Math.min(900, Math.max(680, w)));
+		const deskW = w < 520 ? 420 : 680;
 		desk.style.width = `${deskW}px`;
 		$("#vn").style.right = deskW === 420 ? "20px" : "24px";
 		const scale = Math.min(1, w / deskW);
@@ -2730,43 +2727,6 @@
 		new IntersectionObserver(([e]) => nav.classList.toggle("is-stuck", !e.isIntersecting)).observe(sentinel);
 	}
 
-	// Section titles come in word by word. Each word becomes an inline-block
-	// span and the spaces stay plain text, so titles still wrap and balance.
-	// The heading keeps its full text as its accessible name.
-	function splitTitles() {
-		if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-		for (const h of $$(".h2.reveal")) {
-			let n = 0;
-			h.setAttribute("aria-label", h.textContent.trim().replace(/\s+/g, " "));
-			const walk = (node) => {
-				for (const child of [...node.childNodes]) {
-					if (child.nodeType === Node.ELEMENT_NODE) {
-						walk(child);
-						continue;
-					}
-					if (child.nodeType !== Node.TEXT_NODE) continue;
-					const frag = document.createDocumentFragment();
-					for (const part of child.textContent.split(/(\s+)/)) {
-						if (!part) continue;
-						if (/^\s+$/.test(part)) {
-							frag.append(part);
-							continue;
-						}
-						const w = document.createElement("span");
-						w.className = "w";
-						w.setAttribute("aria-hidden", "true");
-						w.style.setProperty("--w", String(n++));
-						w.textContent = part;
-						frag.append(w);
-					}
-					child.replaceWith(frag);
-				}
-			};
-			walk(h);
-			h.classList.add("split");
-		}
-	}
-
 	function reveals() {
 		const io = new IntersectionObserver(
 			(entries) => {
@@ -2830,7 +2790,6 @@
 		wireTheme();
 		buildNav();
 		stickyNav();
-		splitTitles();
 		reveals();
 		for (const a of $$("[data-download]")) a.href = DMG_URL;
 		releaseInfo();

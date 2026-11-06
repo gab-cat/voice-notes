@@ -124,33 +124,31 @@
 
 		<!-- The real window, on a little desktop. -->
 		<section class="section demo" id="demo">
-			<div class="wrap">
-				<h2 class="h2 reveal">Try the window. <span class="accent line">Download a voice note.</span></h2>
-				<div class="demo-grid">
-					<div class="demo-copy">
-						<p class="lede reveal" style="--i: 1">This is Voice Notes' own interface, rebuilt for the web and sped up. The first sample downloads when you get here. Try the others, switch tabs, tick off to-dos and ask the chat for a reply.</p>
-						<div class="downloads reveal" style="--i: 2" id="downloads" aria-label="Sample voice notes"></div>
-						<p class="demo-note reveal" style="--i: 3">The samples are made up. In the app, the transcript comes from Antigravity running Gemini 3.8 Flash.</p>
-					</div>
-					<div class="desk-stage" id="desk-stage">
-						<div class="desk-fit" id="desk-fit">
-							<div class="desk" id="desk">
-								<div class="desk-menubar">
-									<span class="dm-apple" data-icon="apple"></span>
-									<span class="dm-app">Voice Notes</span>
-									<span class="dm-spacer"></span>
-									<button class="dm-tray" id="dm-tray" type="button" aria-label="Open the menu bar menu" aria-expanded="false">
-										<img src="assets/tray-icon.png" alt="" class="tray-img" />
-									</button>
-									<span class="dm-clock mono tabular" id="dm-clock">9:41</span>
-								</div>
-								<div class="tray-menu" id="tray-menu" role="menu" aria-label="Menu bar menu"></div>
-								<div class="desk-toast" id="desk-toast" role="status" aria-live="polite">
-									<img src="assets/icon-256.png" width="34" height="34" alt="" />
-									<div><b id="dt-title">Voice note transcribed</b><span id="dt-body"></span></div>
-								</div>
-								<div class="vn" id="vn" role="application" aria-label="Interactive demo of the Voice Notes window"></div>
+			<div class="wrap demo-grid">
+				<div class="demo-copy">
+					<h2 class="h2 reveal">Try the window. Download a voice note.</h2>
+					<p class="lede reveal" style="--i: 1">This is Voice Notes' own interface, rebuilt for the web and sped up. Pick a sample below, then switch tabs, tick off to-dos and ask the chat for a reply.</p>
+					<div class="downloads reveal" style="--i: 2" id="downloads" aria-label="Sample voice notes"></div>
+					<p class="demo-note reveal" style="--i: 3">The samples are made up. In the app, the transcript comes from Antigravity running Gemini 3.8 Flash.</p>
+				</div>
+				<div class="desk-stage" id="desk-stage">
+					<div class="desk-fit" id="desk-fit">
+						<div class="desk" id="desk">
+							<div class="desk-menubar">
+								<span class="dm-apple" data-icon="apple"></span>
+								<span class="dm-app">Voice Notes</span>
+								<span class="dm-spacer"></span>
+								<button class="dm-tray" id="dm-tray" type="button" aria-label="Open the menu bar menu" aria-expanded="false">
+									<img src="assets/tray-icon.png" alt="" class="tray-img" />
+								</button>
+								<span class="dm-clock mono tabular" id="dm-clock">9:41</span>
 							</div>
+							<div class="tray-menu" id="tray-menu" role="menu" aria-label="Menu bar menu"></div>
+							<div class="desk-toast" id="desk-toast" role="status" aria-live="polite">
+								<img src="assets/icon-256.png" width="34" height="34" alt="" />
+								<div><b id="dt-title">Voice note transcribed</b><span id="dt-body"></span></div>
+							</div>
+							<div class="vn" id="vn" role="application" aria-label="Interactive demo of the Voice Notes window"></div>
 						</div>
 					</div>
 				</div>
@@ -160,7 +158,7 @@
 		<!-- The path a voice note takes. -->
 		<section class="section" id="how">
 			<div class="wrap">
-				<h2 class="h2 reveal">From Downloads to done in about <span class="accent nowrap">thirty seconds.</span></h2>
+				<h2 class="h2 reveal">From Downloads to done in about thirty seconds.</h2>
 				<p class="lede reveal" style="--i: 1">Voice Notes checks your Downloads folder every two seconds. When a file named WhatsApp Audio lands there, this happens.</p>
 
 				<div class="pipe reveal" style="--i: 2" id="pipe">
@@ -173,8 +171,8 @@
 						</li>
 						<li class="pipe-step" data-step="1">
 							<span class="ps-num mono">2</span>
-							<h3>It moves into Voice Notes</h3>
-							<p>The Opus file leaves Downloads for the app's own folder, unchanged. After 7 days it goes to the Trash, unless you change that in Settings.</p>
+							<h3>It's copied, not converted</h3>
+							<p>The Opus file stays as WhatsApp made it. It plays in the window and still works after you clear Downloads.</p>
 						</li>
 						<li class="pipe-step" data-step="2">
 							<span class="ps-num mono">3</span>
@@ -248,25 +246,25 @@
 
 		<!-- Mixed languages. -->
 		<section class="section" id="languages">
-			<div class="wrap">
-				<h2 class="h2 reveal">Mixed languages, written <span class="accent line">the way they were said.</span></h2>
-				<div class="lang-grid">
+			<div class="wrap lang-grid">
+				<div>
+					<h2 class="h2 reveal">Mixed languages, written the way they were said.</h2>
 					<p class="lede reveal" style="--i: 1">Taglish stays Taglish. Arabic sits right to left beside the English around it. Flip to English when you need it.</p>
-					<div class="panel lang-card reveal" style="--i: 2" id="lang-card">
-						<div class="lang-head">
-							<div class="seg" id="lang-pick" role="radiogroup" aria-label="Sample">
-								<span class="seg-thumb" aria-hidden="true"></span>
-								<button role="radio" data-lang="tl">Tagalog and English</button>
-								<button role="radio" data-lang="ar">Arabic and English</button>
-							</div>
-							<div class="seg" id="lang-view" role="radiogroup" aria-label="Transcript language">
-								<span class="seg-thumb" aria-hidden="true"></span>
-								<button role="radio" data-view="original">Original</button>
-								<button role="radio" data-view="english">English</button>
-							</div>
+				</div>
+				<div class="panel lang-card reveal" style="--i: 2" id="lang-card">
+					<div class="lang-head">
+						<div class="seg" id="lang-pick" role="radiogroup" aria-label="Sample">
+							<span class="seg-thumb" aria-hidden="true"></span>
+							<button role="radio" data-lang="tl">Tagalog and English</button>
+							<button role="radio" data-lang="ar">Arabic and English</button>
 						</div>
-						<div class="lang-body" id="lang-body" aria-live="polite"></div>
+						<div class="seg" id="lang-view" role="radiogroup" aria-label="Transcript language">
+							<span class="seg-thumb" aria-hidden="true"></span>
+							<button role="radio" data-view="original">Original</button>
+							<button role="radio" data-view="english">English</button>
+						</div>
 					</div>
+					<div class="lang-body" id="lang-body" aria-live="polite"></div>
 				</div>
 			</div>
 		</section>
@@ -274,11 +272,11 @@
 		<!-- Safety. -->
 		<section class="section" id="safety">
 			<div class="wrap">
-				<h2 class="h2 reveal">It reads voice notes. <span class="accent line">It doesn't take orders from them.</span></h2>
+				<h2 class="h2 reveal">It reads voice notes. It doesn't take orders from them.</h2>
 				<p class="lede reveal" style="--i: 1">A voice note is someone else's words. Voice Notes treats them as content to transcribe, never as instructions.</p>
 
 				<div class="cmd reveal" style="--i: 2">
-					<span class="line"><span class="p">$</span>agy -p "…" <span class="f">--model</span> gemini-3.8-flash-low <span class="f">--sandbox</span> <span class="f">--output-format</span> json</span>
+					<span class="line"><span class="p">$</span>agy -p "…" <span class="f">--model</span> gemini-3.8-flash-medium <span class="f">--sandbox</span> <span class="f">--output-format</span> json</span>
 				</div>
 
 				<div class="facts">
@@ -327,42 +325,40 @@
 
 		<!-- FAQ. -->
 		<section class="section" id="faq">
-			<div class="wrap">
-				<h2 class="h2 reveal">Questions, answered.</h2>
-				<div class="faq-grid">
-					<div class="faq-head">
-						<p class="lede reveal" style="--i: 1">Something else? <a class="inline accent-link" href="https://github.com/gab-cat/voice-notes/issues">Open an issue on GitHub.</a></p>
-					</div>
-					<div class="faq-list">
-						<details class="qa reveal">
-							<summary>Does my audio leave my Mac?<span class="plus"></span></summary>
-							<div class="ans">Yes, once: it goes to Google through the Antigravity CLI so Gemini can transcribe it. The transcript, summary, ticks and chats are stored on your Mac, in Application Support.</div>
-						</details>
-						<details class="qa reveal" style="--i: 1">
-							<summary>Does it work with the WhatsApp app, or only WhatsApp Web?<span class="plus"></span></summary>
-							<div class="ans">Either. It watches your Downloads folder for files named WhatsApp Audio, so any way of saving the voice note there works.</div>
-						</details>
-						<details class="qa reveal" style="--i: 2">
-							<summary>Which languages does it understand?<span class="plus"></span></summary>
-							<div class="ans">Whatever Gemini understands, including notes that switch between languages mid-sentence. When a note isn't in English you also get an English translation.</div>
-						</details>
-						<details class="qa reveal" style="--i: 3">
-							<summary>Will it reply for me?<span class="plus"></span></summary>
-							<div class="ans">No. The chat drafts replies ready to paste into WhatsApp. Sending is always up to you.</div>
-						</details>
-						<details class="qa reveal" style="--i: 4">
-							<summary>What about voice notes I already have?<span class="plus"></span></summary>
-							<div class="ans">The first time it runs, it lists what's already in Downloads without sending anything. Each one has a Transcribe button for when you want it.</div>
-						</details>
-						<details class="qa reveal" style="--i: 5">
-							<summary>Why does macOS warn me when I open it?<span class="plus"></span></summary>
-							<div class="ans">The app is signed ad hoc rather than notarized by Apple, which is common for small open-source tools. You allow it once. After an update, macOS may ask about Downloads again.</div>
-						</details>
-						<details class="qa reveal" style="--i: 6">
-							<summary>Does it cost anything?<span class="plus"></span></summary>
-							<div class="ans">The app is free and open source. Transcription runs on your own Antigravity account, under whatever limits Google sets for it.</div>
-						</details>
-					</div>
+			<div class="wrap faq-grid">
+				<div class="faq-head">
+					<h2 class="h2 reveal">Questions, answered.</h2>
+					<p class="lede reveal" style="--i: 1">Something else? <a class="inline accent-link" href="https://github.com/gab-cat/voice-notes/issues">Open an issue on GitHub.</a></p>
+				</div>
+				<div class="faq-list">
+					<details class="qa reveal">
+						<summary>Does my audio leave my Mac?<span class="plus"></span></summary>
+						<div class="ans">Yes, once: it goes to Google through the Antigravity CLI so Gemini can transcribe it. The transcript, summary, ticks and chats are stored on your Mac, in Application Support.</div>
+					</details>
+					<details class="qa reveal" style="--i: 1">
+						<summary>Does it work with the WhatsApp app, or only WhatsApp Web?<span class="plus"></span></summary>
+						<div class="ans">Either. It watches your Downloads folder for files named WhatsApp Audio, so any way of saving the voice note there works.</div>
+					</details>
+					<details class="qa reveal" style="--i: 2">
+						<summary>Which languages does it understand?<span class="plus"></span></summary>
+						<div class="ans">Whatever Gemini understands, including notes that switch between languages mid-sentence. When a note isn't in English you also get an English translation.</div>
+					</details>
+					<details class="qa reveal" style="--i: 3">
+						<summary>Will it reply for me?<span class="plus"></span></summary>
+						<div class="ans">No. The chat drafts replies ready to paste into WhatsApp. Sending is always up to you.</div>
+					</details>
+					<details class="qa reveal" style="--i: 4">
+						<summary>What about voice notes I already have?<span class="plus"></span></summary>
+						<div class="ans">The first time it runs, it lists what's already in Downloads without sending anything. Each one has a Transcribe button for when you want it.</div>
+					</details>
+					<details class="qa reveal" style="--i: 5">
+						<summary>Why does macOS warn me when I open it?<span class="plus"></span></summary>
+						<div class="ans">The app is signed ad hoc rather than notarized by Apple, which is common for small open-source tools. You allow it once. After an update, macOS may ask about Downloads again.</div>
+					</details>
+					<details class="qa reveal" style="--i: 6">
+						<summary>Does it cost anything?<span class="plus"></span></summary>
+						<div class="ans">The app is free and open source. Transcription runs on your own Antigravity account, under whatever limits Google sets for it.</div>
+					</details>
 				</div>
 			</div>
 		</section>

@@ -80,16 +80,12 @@ function start() {
 	resize();
 	new ResizeObserver(resize).observe(host);
 
-	// Cursor ripples on the floor: a soft swell where the cursor passes, only
-	// once it has moved a little, so small hand movements don't stir the field.
+	// Cursor ripples on the floor.
 	const ray = new THREE.Raycaster();
 	const floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 	const hit = new THREE.Vector3();
 	const ripples = []; // { x, z, t0 }
-	const RIPPLE_LIFE = 3.4;
 	let lastRipple = 0;
-	let lastX = Infinity;
-	let lastZ = Infinity;
 	hero.addEventListener("pointermove", (e) => {
 		const r = renderer.domElement.getBoundingClientRect();
 		const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
@@ -97,34 +93,21 @@ function start() {
 		ray.setFromCamera({ x: nx, y: ny }, camera);
 		if (!ray.ray.intersectPlane(floor, hit)) return;
 		const now = performance.now() / 1000;
-		if (now - lastRipple < 0.28 || Math.hypot(hit.x - lastX, hit.z - lastZ) < 1.1) return;
+		if (now - lastRipple < 0.12) return;
 		lastRipple = now;
-		lastX = hit.x;
-		lastZ = hit.z;
 		ripples.push({ x: hit.x, z: hit.z, t0: now });
-		if (ripples.length > 8) ripples.shift();
+		if (ripples.length > 10) ripples.shift();
 	});
 
 	const m = new THREE.Matrix4();
 	const col = new THREE.Color();
-	// Each bar eases toward its height instead of jumping to it, so the whole
-	// field moves like a surface rather than flickering bar by bar.
-	const heights = new Float32Array(count);
 	let level = 0;
 	let raf = 0;
 	let first = true;
-	let last = 0;
 
 	const frame = (ms) => {
 		const t = ms / 1000;
-		const dt = last ? Math.min(0.1, t - last) : 1 / 60;
-		last = t;
-		// The voice note's loudness, smoothed by time rather than by frame: it
-		// rises quickly and settles a little slower, so it swells without snapping.
-		const target = window.vnLevel || 0;
-		const tau = target > level ? 0.12 : 0.4;
-		level += (target - level) * (1 - Math.exp(-dt / tau));
-		const ease = 1 - Math.exp(-dt / 0.07);
+		level += ((window.vnLevel || 0) - level) * 0.12;
 
 		for (let i = 0; i < count; i++) {
 			const x = xs[i];
@@ -135,30 +118,25 @@ function start() {
 				0.22 * (0.5 + 0.5 * Math.sin(x * 0.33 + t * 0.5)) * (0.5 + 0.5 * Math.cos(z * 0.42 - t * 0.9)) +
 				0.08 * Math.sin(x * 1.3 - z * 0.7 + t * 0.7);
 
-			// Sound: waves rolling out from the middle of the field, with a tall
-			// rise along the centre line. Every term is a smooth sine, so it flows.
-			if (level > 0.002) {
+			// Sound: rings travelling out from the middle of the field.
+			if (level > 0.01) {
 				const dz = z + 6;
 				const d = Math.sqrt(x * x + dz * dz);
-				const ring = 0.5 + 0.5 * Math.sin(d * 1.15 - t * 4.8);
-				const fall = Math.exp(-d * 0.08);
-				const spine = Math.exp(-(x * x) / 22);
-				h += level * (2 * ring * fall + 0.85 * spine * (0.5 + 0.5 * Math.sin(z * 0.8 - t * 3.6)));
+				const ring = 0.5 + 0.5 * Math.sin(d * 1.6 - t * 7.5);
+				const fall = Math.exp(-d * 0.09);
+				const spine = Math.exp(-(x * x) / 18);
+				h += level * (1.7 * ring * fall + 0.7 * spine * (0.5 + 0.5 * Math.sin(z * 1.1 + t * 11)));
 			}
 
-			// Cursor ripples: a wide, low front that grows in and fades out.
+			// Cursor ripples, fading over 2.4s.
 			for (const rp of ripples) {
 				const age = t - rp.t0;
-				if (age > RIPPLE_LIFE) continue;
+				if (age > 2.4) continue;
 				const d = Math.hypot(x - rp.x, z - rp.z);
-				const front = Math.exp(-((d - age * 3.2) ** 2) / 2.6);
-				const life = Math.min(1, age / 0.35) * (1 - age / RIPPLE_LIFE) ** 2;
-				h += front * 0.42 * life;
+				const front = Math.exp(-((d - age * 5) ** 2) / 0.9);
+				h += front * 0.9 * (1 - age / 2.4);
 			}
 
-			const cur = heights[i] ? heights[i] + (h - heights[i]) * ease : h;
-			heights[i] = cur;
-			h = cur;
 			m.makeScale(1, Math.max(0.04, h), 1);
 			m.setPosition(x, 0, z);
 			mesh.setMatrixAt(i, m);
@@ -168,7 +146,7 @@ function start() {
 			if (k > 0.7) col.lerp(hot, (k - 0.7) / 0.3);
 			mesh.setColorAt(i, col);
 		}
-		while (ripples.length && t - ripples[0].t0 > RIPPLE_LIFE) ripples.shift();
+		while (ripples.length && t - ripples[0].t0 > 2.4) ripples.shift();
 		mesh.instanceMatrix.needsUpdate = true;
 		mesh.instanceColor.needsUpdate = true;
 		renderer.render(scene, camera);
