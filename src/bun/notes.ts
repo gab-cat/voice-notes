@@ -213,7 +213,15 @@ async function processNote(id: string): Promise<Note | null> {
 	if (!audio) throw new Error("The audio file is no longer in Downloads.");
 	const { text, structured } = await runAgent(processPrompt(basename(audio)), { cwd: dir, schema: SCHEMA });
 	events?.onAuth(true);
-	const data = (structured ?? extractJson(text)) as Record<string, unknown>;
+	let data = (structured ?? extractJson(text)) as Record<string, unknown>;
+	// Flash has been seen nesting the whole JSON answer inside one string
+	// field. Unwrap it rather than show raw JSON as the transcript.
+	if (typeof data.transcript === "string" && data.transcript.trim().startsWith("{")) {
+		try {
+			const inner = JSON.parse(data.transcript);
+			if (inner && typeof inner === "object" && "transcript" in inner) data = { ...data, ...inner };
+		} catch {}
+	}
 	const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 	const arr = (v: unknown) => (Array.isArray(v) ? v.map(String).filter(Boolean) : []);
 	if (!str(data.transcript)) throw new AgentError("Antigravity couldn't hear anything in this voice note.", "other");
