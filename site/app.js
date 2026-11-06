@@ -2514,18 +2514,9 @@
 			mx = e.clientX - r.left;
 		});
 		section.addEventListener("pointerleave", () => (mx = -1));
-		// The swell follows the cursor with a little lag, and grows in and out,
-		// so moving the mouse bends the wave instead of poking it.
-		let fx = -1;
-		let presence = 0;
-		let last = 0;
 		const draw = (now) => {
 			raf = requestAnimationFrame(draw);
 			const t = now / 1000;
-			const dt = last ? Math.min(0.1, t - last) : 1 / 60;
-			last = t;
-			if (mx >= 0) fx = fx < 0 ? mx : fx + (mx - fx) * (1 - Math.exp(-dt / 0.2));
-			presence += ((mx >= 0 ? 1 : 0) - presence) * (1 - Math.exp(-dt / 0.4));
 			const [r, g, b] = cssColor("--accent");
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 			ctx.clearRect(0, 0, w, h);
@@ -2534,13 +2525,11 @@
 			const n = Math.floor(w / gap);
 			for (let i = 0; i < n; i++) {
 				const x = i * gap + (w - n * gap) / 2;
-				// Two long waves drifting past each other, then a softer, shorter one.
-				let a = 0.38 + 0.3 * Math.sin(i * 0.11 - t * 1.1) * Math.sin(i * 0.035 + t * 0.45);
-				a += 0.14 * (0.5 + 0.5 * Math.sin(i * 0.27 - t * 1.9));
-				const pull = fx >= 0 ? Math.exp(-((x - fx) ** 2) / (2 * 110 ** 2)) * presence : 0;
-				a += 0.7 * pull;
+				let a = 0.35 + 0.35 * Math.sin(i * 0.18 - t * 1.6) * Math.sin(i * 0.05 + t * 0.6);
+				a += 0.25 * Math.abs(Math.sin(i * 0.9 + t * 4));
+				if (mx >= 0) a += 0.9 * Math.exp(-((x - mx) ** 2) / (2 * 80 ** 2));
 				const bh = Math.max(4, Math.min(h * 0.95, a * h * 0.6));
-				const near = fx >= 0 ? Math.exp(-((x - fx) ** 2) / (2 * 140 ** 2)) * presence : 0;
+				const near = mx >= 0 ? Math.exp(-((x - mx) ** 2) / (2 * 120 ** 2)) : 0;
 				ctx.fillStyle = `rgba(${r},${g},${b},${0.22 + near * 0.6})`;
 				ctx.beginPath();
 				ctx.roundRect(x, (h - bh) / 2, bw, bh, bw / 2);
@@ -2623,24 +2612,9 @@
 			my = -1e4;
 		});
 
-		// The cursor's spot trails the pointer and fades in and out, and the bars
-		// near it swell in one wave that travels across the letters.
-		let fx = -1e4;
-		let fy = -1e4;
-		let presence = 0;
-		let last = 0;
 		const draw = (now) => {
 			raf = requestAnimationFrame(draw);
 			const t = now / 1000;
-			const dt = last ? Math.min(0.1, t - last) : 1 / 60;
-			last = t;
-			const inside = mx > -1e3;
-			if (inside) {
-				const k = fx < -1e3 ? 1 : 1 - Math.exp(-dt / 0.14);
-				fx += (mx - fx) * k;
-				fy += (my - fy) * k;
-			}
-			presence += ((inside ? 1 : 0) - presence) * (1 - Math.exp(-dt / 0.3));
 			const ink = cssColor("--ink");
 			const acc = cssColor("--accent");
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -2649,9 +2623,9 @@
 			for (const c of cols) {
 				const cx = c.x + colW / 2;
 				const cy = (c.y0 + c.y1) / 2;
-				const d = Math.hypot(cx - fx, cy - fy);
-				const near = Math.exp(-(d * d) / (2 * 80 * 80)) * presence;
-				const wob = near * 0.2 * (0.5 + 0.5 * Math.sin(t * 3.2 - cx * 0.045));
+				const d = Math.hypot(cx - mx, cy - my);
+				const near = Math.exp(-(d * d) / (2 * 70 * 70));
+				const wob = near * 0.35 * Math.sin(t * 9 + c.seed);
 				const len = (c.y1 - c.y0) * (1 + wob);
 				const col = near > 0.05 ? acc.map((v, i) => Math.round(ink[i] + (v - ink[i]) * near)) : ink;
 				ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${0.9})`;
