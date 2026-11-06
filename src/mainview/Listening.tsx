@@ -60,7 +60,8 @@ function useScene(id: string, active: boolean, leaving: boolean) {
 		if (!canvas || !slot) return;
 		const ctx = canvas.getContext("2d")!;
 		const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-		const peak = document.documentElement.classList.contains("dark") ? 0.35 : 0.92;
+		// The bloom only lights a light page; in dark mode the point just fades.
+		const peak = document.documentElement.classList.contains("dark") ? 0 : 0.92;
 		const half = shape(id, BARS / 2);
 		const env = shape(`${id}:env`, 64);
 
@@ -389,8 +390,8 @@ function useScene(id: string, active: boolean, leaving: boolean) {
 					ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
 				}
 				// It washes the whole window for a moment, so the dark lifts out of
-				// sight. Softer when the result underneath is dark too.
-				if (bloom > 0) {
+				// sight. None in dark mode, where the result is dark too.
+				if (bloom > 0 && peak > 0) {
 					// Grows out of the point with no hard edge.
 					const grow = easeOut(clamp(bloom / 0.28));
 					const a = peak * (bloom < 0.28 ? grow : 1 - easeIn(clamp((bloom - 0.55) / 0.45)));
