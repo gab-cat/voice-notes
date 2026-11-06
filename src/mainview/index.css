@@ -104,6 +104,21 @@ body::after {
 .no-scrollbar::-webkit-scrollbar {
 	display: none;
 }
+/* Content feathers out under the title bar once a list is scrolled, instead
+   of being cut by a hard edge. The app sets data-scrolled on scroll. */
+@property --fade-top {
+	syntax: "<length>";
+	inherits: false;
+	initial-value: 0px;
+}
+.scroll-soft {
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade-top));
+	mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade-top));
+	transition: --fade-top 240ms ease-out;
+}
+.scroll-soft[data-scrolled="true"] {
+	--fade-top: 22px;
+}
 .scroll-soft::-webkit-scrollbar {
 	width: 8px;
 }
@@ -360,6 +375,31 @@ body::after {
 .animate-rate {
 	display: inline-block;
 	animation: rate-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Chat: your message lifts in from the composer, and a reply writes itself
+   in word by word. */
+@keyframes send-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px) scale(0.96);
+	}
+}
+.animate-send {
+	transform-origin: right bottom;
+	animation: send-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.reply-word {
+	display: inline-block;
+	animation: word-in 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	animation-delay: var(--d, 0ms);
+}
+pre.reply-word {
+	display: block;
+}
+.reply-li {
+	animation: fade 360ms ease-out both;
+	animation-delay: var(--d, 0ms);
 }
 
 /* A processing row in the list: light passes through it. */

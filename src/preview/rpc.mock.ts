@@ -160,7 +160,11 @@ export const retryAuthFailed = async () => wait(800);
 export const sendChat = async (id: string, message: string) => {
 	await wait(1200);
 	const n = notes.find((x) => x.id === id)!;
-	n.chat = [...n.chat, { role: "me", text: message, at: iso(0) }, { role: "agent", text: "Here's a short reply you can send.", at: iso(0) }];
+	n.chat = [...n.chat, { role: "me", text: message, at: iso(0) }, {
+			role: "agent",
+			text: "Here's a reply you can send:\n\nSige! Ililipat ko na yung **pricing** sa taas ng testimonials ngayon. Yung Arabic version on track for Thursday, and I'll send the staging link as soon as it's live.\n\n- Pricing above testimonials: today\n- Arabic landing page: Thursday\n- Staging link: right after deploy",
+			at: iso(0),
+		}];
 	noteListeners.forEach((fn) => fn({ ...n }));
 	return n;
 };

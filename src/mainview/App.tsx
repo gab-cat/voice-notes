@@ -31,12 +31,27 @@ function useSystemTheme() {
 	}, []);
 }
 
+/** Marks scrolled lists so their top edge feathers out under the title bar. */
+function useScrollEdges() {
+	useEffect(() => {
+		const onScroll = (e: Event) => {
+			const el = e.target;
+			if (!(el instanceof HTMLElement) || !el.classList.contains("scroll-soft")) return;
+			const scrolled = String(el.scrollTop > 4);
+			if (el.dataset.scrolled !== scrolled) el.dataset.scrolled = scrolled;
+		};
+		document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+		return () => document.removeEventListener("scroll", onScroll, { capture: true });
+	}, []);
+}
+
 type Page = "list" | "note" | "settings";
 type View = { page: Page; id: string | null; dir: number; n: number };
 const keyOf = (v: { page: Page; id: string | null }) => (v.page === "note" ? `note-${v.id}` : v.page);
 
 export default function App() {
 	useSystemTheme();
+	useScrollEdges();
 	const [notes, setNotes] = useState<NoteSummary[] | null>(null);
 	const [note, setNote] = useState<Note | null>(null);
 	const [state, setAppState] = useState<AppState>({
